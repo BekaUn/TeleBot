@@ -13,7 +13,6 @@ import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
 @SpringBootApplication
 @Slf4j
-
 public class WeCareApplication {
 
     public static void main(String[] args) throws TelegramApiException {
