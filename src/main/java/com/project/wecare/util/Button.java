@@ -3,7 +3,6 @@ package com.project.wecare.util;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
@@ -21,7 +20,6 @@ public class Button {
 
     public SendMessage button(Update update) {
         SendMessage returnMassage = new SendMessage();
-        SendPhoto sendPhoto=new SendPhoto();
         Message message = update.getMessage();
         String text = message.getText();
 
@@ -37,16 +35,30 @@ public class Button {
         if (text.equals("◀️ Ortga qaytish") || text.equals("◀️ Назад")) {
             returnMassage = buttonStart(message);
         }
-        if (text.equals("▶\uFE0F Дальше")) {
+     /*   if (text.equals("▶\uFE0F Дальше")) {
             returnMassage = ru.step4(message);
         }
+        if (text.equals("▶\uFE0F Дале")) {
+            returnMassage = ru.step5(message);
+        }*/
         if (text.equals("▶\uFE0F Keyingisi")) {
             returnMassage = uz.step4(update,message);
         }
+        if (text.equals("▶\uFE0F Keyingisi.")) {
+            returnMassage = uz.step5(message);
+        }
+        if (text.equals("◀️ Ortga qaytish..")) {
+            returnMassage = uz.step4(update,message);
+        }
+        if (text.equals("◀️ Ortga qaytish.")) {
+            returnMassage = uz.uz(message);
+        }
+        //keyingisi..  ->step6
+
         return returnMassage;
     }
 
-    private SendMessage buttonStart(Message message) {
+   public SendMessage buttonStart(Message message) {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(message.getChatId());
         sendMessage.setText("Tilni tanlang !!!\nВыберите язык !!!");

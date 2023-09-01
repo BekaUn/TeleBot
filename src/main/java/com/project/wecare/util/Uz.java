@@ -1,5 +1,9 @@
 package com.project.wecare.util;
 
+import lombok.RequiredArgsConstructor;
+import org.hibernate.annotations.Fetch;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
@@ -17,12 +21,13 @@ import java.util.List;
 
 @Component
 public class Uz {
+    @Lazy
+    @Autowired
+    private Button button;
     public SendMessage uz(Message message) {
         SendMessage sendMessage = new SendMessage();
-
         sendMessage.setText(conditionUz());
         sendMessage.setChatId(message.getChatId());
-
         ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
         replyKeyboardMarkup.setResizeKeyboard(true);
         KeyboardRow first = new KeyboardRow();
@@ -31,7 +36,6 @@ public class Uz {
         KeyboardButton backButton = new KeyboardButton();
         List<KeyboardRow> rowList = new ArrayList<>();
         dale.setText("▶\uFE0F Keyingisi");
-
         backButton.setText("◀️ Ortga qaytish");
         first.add(dale);
         second.add(backButton);
@@ -44,32 +48,33 @@ public class Uz {
 
     public SendMessage step4(Update update, Message message) {
         SendMessage sendMessage = new SendMessage();
-        String text = message.getText();
         sendMessage.setText("Step 4");
         sendMessage.setChatId(message.getChatId());
-
-        if (text.equals("◀️ Ortga qaytish")) {
-            sendMessage = uz(message);
-        }
-        if (text.equals("▶\uFE0F Keyingisi")) {
-            sendMessage = step5(update, message);
-        }
-
+        ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
+        replyKeyboardMarkup.setResizeKeyboard(true);
+        KeyboardRow first = new KeyboardRow();
+        KeyboardRow second = new KeyboardRow();
+        KeyboardButton dale = new KeyboardButton();
+        KeyboardButton backButton = new KeyboardButton();
+        sendMessage.setChatId(message.getChatId());
+        List<KeyboardRow> rowList = new ArrayList<>();
+        dale.setText("▶\uFE0F Keyingisi.");
+        backButton.setText("◀️ Ortga qaytish.");
+        first.add(dale);
+        second.add(backButton);
+        rowList.add(first);
+        rowList.add(second);
+        replyKeyboardMarkup.setKeyboard(rowList);
+        sendMessage.setReplyMarkup(replyKeyboardMarkup);
         return sendMessage;
+
     }
 
     //agar step 4 dan keyin dalle bosilsa ->
-    public SendMessage step5(Update update, Message message) {
+    public SendMessage step5(Message message) {
         SendMessage sendMessage = new SendMessage();
-        //  SendPhoto sendPhoto = new SendPhoto();
-        // String fileId = "/home/sardor/Backend/Project/TeleBot/src/main/java/com/project/wecare/images/img.png";
-        // sendPhoto.setChatId(message.getChatId());
-        // sendPhoto.setPhoto(new InputFile(fileId));
-        sendMessage.setText("Tarifni tanglang:");
         sendMessage.setChatId(message.getChatId());
-        long chatId = update.getMessage().getChatId();
-
-
+        sendMessage.setText("Tarifni tanglang:");
         InlineKeyboardMarkup keyboardMarkup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
 
@@ -78,10 +83,9 @@ public class Uz {
         keyboard.add(createInlineKeyboardRow("6 мес -25%", "tariff_6_months"));
         keyboard.add(createInlineKeyboardRow("9 мес - 32%", "tariff_9_months"));
         keyboard.add(createInlineKeyboardRow("12 мес - 38%", "tariff_12_months"));
-
         keyboardMarkup.setKeyboard(keyboard);
+        sendMessage.setChatId(message.getChatId());
         sendMessage.setReplyMarkup(keyboardMarkup);
-
         return sendMessage;
     }
 
@@ -131,7 +135,6 @@ public class Uz {
     }*/
 
    public SendPhoto photo(Update update) {
-
             Message message = update.getCallbackQuery().getMessage();
             SendPhoto sendPhoto = new SendPhoto();
             sendPhoto.setChatId(message.getChatId());
@@ -147,6 +150,5 @@ public class Uz {
             keyboardMarkup.setKeyboard(keyboard);
             sendPhoto.setReplyMarkup(keyboardMarkup);
             return  sendPhoto;
-
     }
 }
