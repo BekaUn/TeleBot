@@ -12,14 +12,16 @@ import java.io.File;
 @Setter
 @Table(name = ("data"))
 @Entity
-public class Data {
+public class User {
     @Id
     private Long chatId;
+    private String username;
     private File passportPhoto;
     private String registration;
     private File cardPhoto;
     private String phoneNumber;
     private String fullTitle;
+    private String percentage;
     private Double operationCost;
     private String clinicName;
 }
