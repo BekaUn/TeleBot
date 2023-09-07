@@ -1,11 +1,8 @@
 package com.project.wecare.controller;
 
 import com.project.wecare.repository.UserRepository;
-import jakarta.ws.rs.OPTIONS;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import org.apache.http.cookie.SM;
-import org.apache.http.util.NetUtils;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.ForwardMessage;
@@ -23,6 +20,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import com.project.wecare.entity.User;
 
@@ -37,57 +35,79 @@ public class TelegramBotController extends TelegramLongPollingBot {
     private String YES_BUTTON = "Yes";
     private String NO_BUTTON = "NO";
     private long userId;
+    private String PHONE_BUTTON = "Phone";
+    private String ACCEPT_BUTTON = "Accept";
+
 
     @SneakyThrows
     @Override
     public void onUpdateReceived(Update update) {
         SendMessage returnMassage = new SendMessage();
-       // Message message = update.getMessage();
+        if (update.hasCallbackQuery()) {
+            if (update.getCallbackQuery().getData().equals("Yes")) {
+                SendMessage sendMessage = new SendMessage();
+                sendMessage.setChatId(userId);
+                sendMessage.setText("Ok");
+                execute(sendMessage);
 
-        System.out.println(update.getMessage().getChatId());
+            }
+            if (update.getCallbackQuery().getData().equals("NO")) {
+                SendMessage sendMessage = new SendMessage();
+                sendMessage.setChatId(userId);
+                sendMessage.setText("Poshol");
+                execute(sendMessage);
 
-        if (update.getMessage().hasPhoto()){
-            System.out.println("photo keldi \n\n\n\n \n\n\n");
-            ForwardMessage forwardMessage=new ForwardMessage();
-            forwardMessage.setChatId(groupChatId);
-            forwardMessage.setFromChatId(update.getMessage().getChatId());
-            forwardMessage.setMessageId(update.getMessage().getMessageId());
+            }
+            if (update.getCallbackQuery().getData().equals("Accept")) {
 
-            execute(forwardMessage);
+                execute(step5(userId));
+
+            }
+
+
         }
 
- if (update.getMessage().hasText()) {
-     if (update.getMessage().getText().equals("/start")) {
-         returnMassage = buttonStart(update.getMessage());
-     }
+        // Message message = update.getMessage();
 
-     if (update.getMessage().getText().equals("\uD83C\uDDFA\uD83C\uDDFF Uz")) {
-         returnMassage = uz(update.getMessage());
-     }
-     if (update.getMessage().getText().equals("\uD83C\uDDF7\uD83C\uDDFA Ru")) {
-         returnMassage = ru(update.getMessage());
-     }
-     if (update.getMessage().getText().equals("◀️ Ortga qaytish") || update.getMessage().getText().equals("◀️ Назад")) {
-         returnMassage = buttonStart(update.getMessage());
-     }
-     if (update.getMessage().getText().equals("▶\uFE0F Keyingisi")) {
+        if (update.getMessage().hasPhoto()) {
+            forwardPhotoToAdmin(update.getMessage());
+            yesNoAdmin(groupChatId, "34567yuidsf");
+            userId = update.getMessage().getChatId();
+
+        }
+
+        if (update.getMessage().hasText()) {
+            if (update.getMessage().getText().equals("/start")) {
+                returnMassage = buttonStart(update.getMessage());
+            }
+
+            if (update.getMessage().getText().equals("\uD83C\uDDFA\uD83C\uDDFF Uz")) {
+                returnMassage = uz(update.getMessage());
+            }
+            if (update.getMessage().getText().equals("\uD83C\uDDF7\uD83C\uDDFA Ru")) {
+                returnMassage = ru(update.getMessage());
+            }
+            if (update.getMessage().getText().equals("◀️ Ortga qaytish") || update.getMessage().getText().equals("◀️ Назад")) {
+                returnMassage = buttonStart(update.getMessage());
+            }
+            if (update.getMessage().getText().equals("▶\uFE0F Keyingisi")) {
             /*if (update.getMessage().getChatId() != groupChatId || update.getCallbackQuery().getMessage().getChatId() != groupChatId) {
                 userId = update.getMessage().getChatId();
             }*/
-         returnMassage = step4Uz(update);
+                returnMassage = step4Uz(update);
 
-     }
-     if (update.getMessage().getText().equals("▶\uFE0F Keyingisi.")) {
-         returnMassage = step5(update);
-     }
-     if (update.getMessage().getText().equals("◀️ Ortga qaytish..")) {
-         returnMassage = step4Uz(update);
-     }
-     if (update.getMessage().getText().equals("◀️ Ortga qaytish.")) {
-         returnMassage = uz(update.getMessage());
-     }
+            }
+            if (update.getMessage().getText().equals("▶\uFE0F Keyingisi.")) {
+                returnMassage = step5(userId);
+            }
+            if (update.getMessage().getText().equals("◀️ Ortga qaytish..")) {
+                returnMassage = step4Uz(update);
+            }
+            if (update.getMessage().getText().equals("◀️ Ortga qaytish.")) {
+                returnMassage = uz(update.getMessage());
+            }
 
- }
+        }
 
 
         try {
@@ -96,6 +116,7 @@ public class TelegramBotController extends TelegramLongPollingBot {
             throw new RuntimeException(e);
         }
     }
+
 
     @Override
     public String getBotUsername() {
@@ -176,11 +197,10 @@ public class TelegramBotController extends TelegramLongPollingBot {
     }
 
     //agar step 4 dan keyin dalle bosilsa ->
-    public SendMessage step5(Update update) {
-        long chatId = update.getMessage().getChatId();
+    public SendMessage step5(long chatId) {
         //  sendPhotos.photo(update);
         SendMessage sendMessage = new SendMessage();
-        sendMessage.setChatId(update.getMessage().getChatId());
+        sendMessage.setChatId(chatId);
         sendMessage.setText("Tarifni tanglang:");
         sendPhotoToTelegram(chatId, "", "src/main/resources/image/img.png");
         InlineKeyboardMarkup keyboardMarkup = new InlineKeyboardMarkup();
@@ -190,7 +210,7 @@ public class TelegramBotController extends TelegramLongPollingBot {
         keyboard.add(createInlineKeyboardRow("9 мес - 32%", "tariff_9_months"));
         keyboard.add(createInlineKeyboardRow("12 мес - 38%", "tariff_12_months"));
         keyboardMarkup.setKeyboard(keyboard);
-        sendMessage.setChatId(update.getMessage().getChatId());
+        sendMessage.setChatId(chatId);
         sendMessage.setReplyMarkup(keyboardMarkup);
         return sendMessage;
     }
@@ -254,23 +274,6 @@ public class TelegramBotController extends TelegramLongPollingBot {
             update.getCallbackQuery().getMessage().getText();
         }
         User user = optional.get();
-        if (user.getPassportPhoto() == null && response.equals("Ha") && message.getPhoto() != null
-                || user.getPassportPhoto() == null && response.equals("Ha") && callbackQuery.getMessage().getPhoto() != null) {
-            User saveUser = userRepository.findByChatId(userId).get();
-            File file = new File(update.getMessage().getText());
-            if (update.getMessage().getPhoto() != null) {
-                file = (File) update.getMessage().getPhoto();
-            }
-            if (update.getCallbackQuery().getMessage().getPhoto() != null) {
-                file = (File) update.getCallbackQuery().getMessage().getPhoto();
-            }
-            if (user.getPassportPhoto() == null) {
-                sendPhotoToTelegram(groupChatId, "asdadad", file.getPath());
-            }
-
-            saveUser.setPassportPhoto(file);
-            sendMessage.setText("password was saved");
-        }
 
         if (user.getPassportPhoto() == null) {
             sendMessage.setText("1. Фото паспорта или ID (передняя и задняя сторона)");
@@ -322,7 +325,7 @@ public class TelegramBotController extends TelegramLongPollingBot {
         userRepository.save(user);
     }
 
-    private SendMessage YesNoAdmin(long chatId, String text) {
+    private void yesNoAdmin(long chatId, String text) throws TelegramApiException {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(chatId);
         sendMessage.setText(text);
@@ -331,23 +334,33 @@ public class TelegramBotController extends TelegramLongPollingBot {
         List<InlineKeyboardButton> rowInLine = new ArrayList<>();
         var payment = new InlineKeyboardButton();
 
-        payment.setText("Ha");
+        payment.setText("Перефоткать паспорт");
         payment.setCallbackData(YES_BUTTON);
+
 
         var back = new InlineKeyboardButton();
 
-        back.setText("Yoq");
+        back.setText("Перефоткать пластиковую карту");
         back.setCallbackData(NO_BUTTON);
-
+        var phoneNum = new InlineKeyboardButton();
+        phoneNum.setText("Введите номер телефона");
+        phoneNum.setCallbackData(PHONE_BUTTON);
+        var acceptBut = new InlineKeyboardButton();
+        acceptBut.setText("Документы принять");
+        acceptBut.setCallbackData(ACCEPT_BUTTON);
         rowInLine.add(payment);
         rowInLine.add(back);
+        rowInLine.add(phoneNum);
+        rowInLine.add(acceptBut);
+
 
         rowsInLine.add(rowInLine);
 
         markupInLine.setKeyboard(rowsInLine);
         sendMessage.setReplyMarkup(markupInLine);
-        return sendMessage;
+        execute(sendMessage);
     }
+
 
     private String conditionUz() {
         return "• Ish vaqti: 10:00 dan 21:00 gacha (shanba 10:00 dan 19:00 gacha, yakshanba 10:00 dan 17:00 gacha) " +
@@ -403,4 +416,16 @@ public class TelegramBotController extends TelegramLongPollingBot {
                 " • За последние 4 месяца поступления были низкими.";
     }
 
+    private void forwardPhotoToAdmin(Message message) throws TelegramApiException {
+        ForwardMessage forwardMessage = new ForwardMessage();
+        forwardMessage.setChatId(groupChatId);
+        forwardMessage.setFromChatId(message.getChatId());
+        forwardMessage.setMessageId(message.getMessageId());
+        execute(forwardMessage);
+    }
+
+
+    private void yesNoButton(Message message) {
+
+    }
 }
