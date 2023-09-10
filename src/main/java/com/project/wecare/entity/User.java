@@ -1,6 +1,7 @@
 package com.project.wecare.entity;
 
 import jakarta.persistence.*;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,4 +27,5 @@ public class User {
     private String percentage;
     private Double operationCost;
     private String clinicName;
+    private String success;
 }
