@@ -21,8 +21,11 @@ import java.util.Set;
 public class User {
     @Id
     private Long chatId;
+    private String firstname;
+    private String lastname;
     private String username;
-    private String passportPhoto;
+    private String passportPhoto1;
+    private String passportPhoto2;
     private String registration;
     private String cardPhoto;
 
@@ -37,15 +40,16 @@ public class User {
 
     @Override
     public String toString() {
-        return "Пользователь\n" +
-                "  username: " + username + "     " +
-                ", прописка: " + registration + "     " +
-                ", номер телефона: " + phoneNumber + "     " +
-                ", название медицинской услуги:  " + fullTitle + "    " +
-                ", процент: " + percentage + '\'' +
-                ", стоимость медицинской услуги " + operationCost  +"    "+
-                ", clinicName: " + clinicName +"    " +
-                '}'+"\n \n \n \n ";
+        return "Клиент" +
+                "firstname='" + firstname + '\'' +
+                ", lastname='" + lastname + '\'' +
+                ", username='" + username + '\'' +
+                ", registration='" + registration + '\'' +
+                ", phoneNumber='" + phoneNumber + '\'' +
+                ", fullTitle='" + fullTitle + '\'' +
+                ", percentage='" + percentage + '\'' +
+                ", operationCost='" + operationCost + '\'' +
+                ", clinicName='" + clinicName + '\'' +
+                '}';
     }
-
 }

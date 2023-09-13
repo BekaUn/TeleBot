@@ -3,7 +3,6 @@ package com.project.wecare.controller;
 import com.project.wecare.entity.User;
 import com.project.wecare.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import org.apache.commons.io.FileUtils;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -23,10 +22,8 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -37,7 +34,7 @@ import java.util.Optional;
 public class TelegramBotController extends TelegramLongPollingBot {
 
     private final UserRepository userRepository;
-    long groupChatId = -997375479;
+    long groupChatId = -1001983667230L;
     private String PASSPORT_BUTTON = "Passport";
     private String NO_BUTTON = "NO";
     private long userId;
@@ -46,7 +43,22 @@ public class TelegramBotController extends TelegramLongPollingBot {
     private String STATUSUZ;
     private String STATUSRU;
     private String LANGUAGE;
+    private String LOCATION = "loc";
+    private String PAYMENT = "pay";
+    private String CLINIC = "clinic";
+    private String OPERATION = "operation";
+    //
+    private String LOCATION_ACCEPT = "loc ACC";
+    private String PAYMENT_ACCEPT = "pay ACC";
+    private String CLINIC_ACCEPT = "clinic ACC";
+    private String OPERATION_ACCEPT = "operation ACC";
+    private String PHONE_BUTTON_ACCEPT = "Phone ACC";
 
+    private String PASSPORT_BUTTON_BACK = "Passport_back";
+    private String NO_BUTTON_BACK = "NO_BACK";
+
+    private String CARD = "card";
+    private String CARDA = "card ACC";
 
 
     @Override
@@ -55,13 +67,12 @@ public class TelegramBotController extends TelegramLongPollingBot {
         if (update.hasCallbackQuery()) {
             if (update.getCallbackQuery().getData().equals("Passport")) {
 
-
                 SendMessage sendMessage = new SendMessage();
                 sendMessage.setChatId(userId);
-                sendMessage.setText("Перефоткайте паспорт");
-                User user=userRepository.findByChatId(userId).get();
-                user.setPassportPhoto(null);
-                STATUSRU="passportPhoto";
+                sendMessage.setText("Перефоткайте пререднюю часть паспорта");
+                User user = userRepository.findByChatId(userId).get();
+                user.setPassportPhoto1(null);
+                STATUSRU = "passportPhoto1";
                 userRepository.save(user);
                 try {
                     execute(sendMessage);
@@ -73,11 +84,8 @@ public class TelegramBotController extends TelegramLongPollingBot {
             if (update.getCallbackQuery().getData().equals("NO")) {
                 SendMessage sendMessage = new SendMessage();
                 sendMessage.setChatId(userId);
-                sendMessage.setText("Перефоткайте пластиковую карту");
-                User user=userRepository.findByChatId(userId).get();
-                user.setCardPhoto(null);
-                STATUSRU="cardPhoto";
-                userRepository.save(user);
+                sendMessage.setText("Фото передней части паспорта принято");
+
                 try {
                     execute(sendMessage);
                 } catch (TelegramApiException e) {
@@ -89,9 +97,9 @@ public class TelegramBotController extends TelegramLongPollingBot {
                 SendMessage sendMessage = new SendMessage();
                 sendMessage.setChatId(userId);
                 sendMessage.setText("Отправьте заново номер телефона");
-                User user=userRepository.findByChatId(userId).get();
+                User user = userRepository.findByChatId(userId).get();
                 user.setPhoneNumber(null);
-                STATUSRU="phoneNumber";
+                STATUSRU = "phoneNumber";
                 userRepository.save(user);
                 try {
                     execute(sendMessage);
@@ -101,179 +109,370 @@ public class TelegramBotController extends TelegramLongPollingBot {
             }
             if (update.getCallbackQuery().getData().equals("Accept")) {
                 try {
-                    execute(step5Uz(userId));
+                    if (LANGUAGE.equals("uz")) {
+                        execute(step5Uz(userId));
+                    } else if (LANGUAGE.equals("ru")) {
+                        execute(step5Ru(userId));
+                    }
                 } catch (TelegramApiException e) {
                     throw new RuntimeException(e);
                 }
             }
+
+            if (update.getCallbackQuery().getData().equals("loc")) {
+                SendMessage sendMessage = new SendMessage();
+                sendMessage.setChatId(userId);
+                sendMessage.setText("Отправьте заново прописку");
+                User user = userRepository.findByChatId(userId).get();
+                user.setRegistration(null);
+                STATUSRU = "location";
+                userRepository.save(user);
+                try {
+                    execute(sendMessage);
+                } catch (TelegramApiException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            if (update.getCallbackQuery().getData().equals("loc ACC")) {
+                SendMessage sendMessage = new SendMessage();
+                sendMessage.setChatId(userId);
+                sendMessage.setText("Пропсика принета");
+                try {
+                    execute(sendMessage);
+                } catch (TelegramApiException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            if (update.getCallbackQuery().getData().equals("pay")) {
+                SendMessage sendMessage = new SendMessage();
+                sendMessage.setChatId(userId);
+                sendMessage.setText("Отправьте заново стоимость операции");
+                User user = userRepository.findByChatId(userId).get();
+                user.setOperationCost(null);
+                STATUSRU = "money";
+                userRepository.save(user);
+                try {
+                    execute(sendMessage);
+                } catch (TelegramApiException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            if (update.getCallbackQuery().getData().equals("pay ACC")) {
+                SendMessage sendMessage = new SendMessage();
+                sendMessage.setChatId(userId);
+                sendMessage.setText("Стоимость операции была принета");
+                try {
+                    execute(sendMessage);
+                } catch (TelegramApiException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            if (update.getCallbackQuery().getData().equals("clinic")) {
+                SendMessage sendMessage = new SendMessage();
+                sendMessage.setChatId(userId);
+                sendMessage.setText("Отправьте заново название клиники");
+                User user = userRepository.findByChatId(userId).get();
+                user.setClinicName(null);
+                STATUSRU = "nemeClinick";
+                userRepository.save(user);
+                try {
+                    execute(sendMessage);
+                } catch (TelegramApiException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            if (update.getCallbackQuery().getData().equals("clinic ACC")) {
+                SendMessage sendMessage = new SendMessage();
+                sendMessage.setChatId(userId);
+                sendMessage.setText("Название клиники успешно приянто");
+                try {
+                    execute(sendMessage);
+                } catch (TelegramApiException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            if (update.getCallbackQuery().getData().equals("operation")) {
+                SendMessage sendMessage = new SendMessage();
+                sendMessage.setChatId(userId);
+                sendMessage.setText("Отправьте заново название операции");
+                User user = userRepository.findByChatId(userId).get();
+                user.setFullTitle(null);
+                STATUSRU = "fulTitle";
+                userRepository.save(user);
+                try {
+                    execute(sendMessage);
+                } catch (TelegramApiException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            if (update.getCallbackQuery().getData().equals("operation ACC")) {
+                SendMessage sendMessage = new SendMessage();
+                sendMessage.setChatId(userId);
+                sendMessage.setText("Название операции успешно принято");
+                ;
+                try {
+                    execute(sendMessage);
+                } catch (TelegramApiException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            if (update.getCallbackQuery().getData().equals("Passport_back")) {
+                SendMessage sendMessage = new SendMessage();
+                sendMessage.setChatId(userId);
+                sendMessage.setText("Отправьте заново заднюю сторону паспорта");
+                User user = userRepository.findByChatId(userId).get();
+                user.setPassportPhoto2(null);
+                STATUSRU = "passportPhoto2";
+                userRepository.save(user);
+                try {
+                    execute(sendMessage);
+                } catch (TelegramApiException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            if (update.getCallbackQuery().getData().equals("NO_BACK")) {
+                SendMessage sendMessage = new SendMessage();
+                sendMessage.setChatId(userId);
+                sendMessage.setText("Задняя сторона паспорта принята");
+                ;
+                try {
+                    execute(sendMessage);
+                } catch (TelegramApiException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            if (update.getCallbackQuery().getData().equals("card")) {
+                SendMessage sendMessage = new SendMessage();
+                sendMessage.setChatId(userId);
+                sendMessage.setText("Отправьте заново фото пластиковой карты");
+                User user = userRepository.findByChatId(userId).get();
+                user.setCardPhoto(null);
+                STATUSRU = "cardPhoto";
+                userRepository.save(user);
+                try {
+                    execute(sendMessage);
+                } catch (TelegramApiException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            if (update.getCallbackQuery().getData().equals("card ACC")) {
+                SendMessage sendMessage = new SendMessage();
+                sendMessage.setChatId(userId);
+                sendMessage.setText("Фаото пластиковой карты принято");
+                ;
+                try {
+                    execute(sendMessage);
+                } catch (TelegramApiException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            if (update.getCallbackQuery().getData().equals("tariff_3_months")) {
+                SendMessage sendMessage = new SendMessage();
+                sendMessage.setChatId(groupChatId);
+
+                User user = userRepository.findByChatId(userId).get();
+                user.setPercentage("3 oy -20%");
+                userRepository.save(user);
+                sendMessage.setText("3 oy -20%" +"\n\n" +user.getFirstname()+ " "+user.getLastname());
+                try {
+                    execute(sendMessage);
+                } catch (TelegramApiException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            if (update.getCallbackQuery().getData().equals("tariff_6_months")) {
+                SendMessage sendMessage = new SendMessage();
+                sendMessage.setChatId(groupChatId);
+
+                User user = userRepository.findByChatId(userId).get();
+                user.setPercentage("6 oy -25%");
+                userRepository.save(user);
+                sendMessage.setText("6 oy -25%" +"\n\n" +user.getFirstname()+ " "+user.getLastname());
+                try {
+                    execute(sendMessage);
+                } catch (TelegramApiException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            if (update.getCallbackQuery().getData().equals("tariff_9_months")) {
+                SendMessage sendMessage = new SendMessage();
+                sendMessage.setChatId(groupChatId);
+
+                User user = userRepository.findByChatId(userId).get();
+                user.setPercentage("9 oy -32%");
+                userRepository.save(user);
+                sendMessage.setText("9 oy -32%" +"\n\n" +user.getFirstname()+ " "+user.getLastname());
+                try {
+                    execute(sendMessage);
+                } catch (TelegramApiException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            if (update.getCallbackQuery().getData().equals("tariff_12_months")) {
+                SendMessage sendMessage = new SendMessage();
+                sendMessage.setChatId(groupChatId);
+
+                User user = userRepository.findByChatId(userId).get();
+                user.setPercentage("12 oy -38%");
+                userRepository.save(user);
+                sendMessage.setText("12 oy -38%" +"\n\n" +user.getFirstname()+ " "+user.getLastname());
+                try {
+                    execute(sendMessage);
+                } catch (TelegramApiException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+
         }
-        if (update.getMessage().hasPhoto()) {
-            System.out.println("photo keldi");
-            List<PhotoSize> photoSizes = update.getMessage().getPhoto();
-            PhotoSize photoSize = photoSizes.get(photoSizes.size() - 1);
-
-            GetFile getFile = new GetFile(photoSize.getFileId());
-            try {
-                userId=update.getMessage().getChatId();
-                User user = userRepository.findByChatId(update.getMessage().getChatId()).get();
-
-                org.telegram.telegrambots.meta.api.objects.File file = execute(getFile);
-                String fileURL = file.getFileUrl(getBotToken());
-
-                URL url = new URL(fileURL);
-                InputStream inputStream = url.openStream();
 
 
-                FileUtils.copyInputStreamToFile(inputStream, new File("/home/sardor/Backend/Project/TeleBot/src/main/resources/passport/" + photoSize.getWidth().toString() + " x " + photoSize.getHeight().toString() + ".jpg"));
-                if (STATUSUZ != null) {
+        if (update.hasMessage()) {
+            if (update.getMessage().hasPhoto()) {
+                List<PhotoSize> photoSizes = update.getMessage().getPhoto();
+                PhotoSize photoSize = photoSizes.get(photoSizes.size() - 1);
+
+                GetFile getFile = new GetFile(photoSize.getFileId());
+                try {
+                    userId = update.getMessage().getChatId();
+                    User user = userRepository.findByChatId(update.getMessage().getChatId()).get();
+
+                    org.telegram.telegrambots.meta.api.objects.File file = execute(getFile);
+                    String fileURL = file.getFileUrl(getBotToken());
+
+                    URL url = new URL(fileURL);
+                    InputStream inputStream = url.openStream();
+
+
+                    FileUtils.copyInputStreamToFile(inputStream, new File("/home/sardor/Backend/Project/TeleBot/src/main/resources/passport/" + photoSize.getWidth().toString() + " x " + photoSize.getHeight().toString() + ".jpg"));
+                    if (STATUSUZ != null) {
+                        if (STATUSUZ.equals("passportPhoto1") && update.getMessage().getPhoto() != null) {
+                            user.setPassportPhoto1("/home/sardor/Backend/Project/TeleBot/src/main/resources/passport/" + photoSize.getWidth().toString() + " x " + photoSize.getHeight().toString() + ".jpg");
+                            userRepository.save(user);
+                            update.getMessage().setPhoto(null);
+                            returnMassage.setChatId(update.getMessage().getChatId());
+                            step4Uz(update);
+                            forwardPhotoToAdmin(update.getMessage());
+                            yesNoAdmin(groupChatId, user.getFirstname() + " " + user.getLastname() + "\n " + user.getChatId());
+
+
+                        }
+                    }
+                    if (STATUSRU != null) {
+                        if (STATUSRU.equals("passportPhoto1") && update.getMessage().getPhoto() != null) {
+                            user.setPassportPhoto1("/home/sardor/Backend/Project/TeleBot/src/main/resources/passport/" + photoSize.getWidth().toString() + " x " + photoSize.getHeight().toString() + ".jpg");
+                            userRepository.save(user);
+                            update.getMessage().setPhoto(null);
+                            returnMassage.setChatId(update.getMessage().getChatId());
+                            step4Ru(update);
+                            forwardPhotoToAdmin(update.getMessage());
+                            yesNoAdmin(groupChatId, user.getFirstname() + " " + user.getLastname() + "\n " + user.getChatId());
+                        }
+                    }
+                    if (STATUSUZ != null) {
+                        if (STATUSUZ.equals("passportPhoto2") && update.getMessage().getPhoto() != null) {
+                            user.setPassportPhoto2("/home/sardor/Backend/Project/TeleBot/src/main/resources/passport/" + photoSize.getWidth().toString() + " x " + photoSize.getHeight().toString() + ".jpg");
+                            userRepository.save(user);
+                            update.getMessage().setPhoto(null);
+                            returnMassage.setChatId(update.getMessage().getChatId());
+                            step4Uz(update);
+                            forwardPhotoToAdmin(update.getMessage());
+                            pasportBack(groupChatId, user.getFirstname() + " " + user.getLastname() + "\n " + user.getChatId());
+                        }
+                    }
+                    if (STATUSRU != null) {
+                        if (STATUSRU.equals("passportPhoto2") && update.getMessage().getPhoto() != null) {
+                            user.setPassportPhoto2("/home/sardor/Backend/Project/TeleBot/src/main/resources/passport/" + photoSize.getWidth().toString() + " x " + photoSize.getHeight().toString() + ".jpg");
+                            userRepository.save(user);
+                            update.getMessage().setPhoto(null);
+                            returnMassage.setChatId(update.getMessage().getChatId());
+                            step4Ru(update);
+                            forwardPhotoToAdmin(update.getMessage());
+                            pasportBack(groupChatId, user.getFirstname() + " " + user.getLastname() + "\n " + user.getChatId());
+                        }
+                    }
+
+                    if (STATUSUZ != null) {
+                        if (STATUSUZ.equals("cardPhoto") && update.getMessage().getPhoto() != null) {
+                            user.setCardPhoto("/home/sardor/Backend/Project/TeleBot/src/main/resources/passport/" + photoSize.getWidth().toString() + " x " + photoSize.getHeight().toString() + ".jpg");
+                            userRepository.save(user);
+                            update.getMessage().setPhoto(null);
+                            returnMassage.setChatId(update.getMessage().getChatId());
+                            step4Uz(update);
+                            forwardPhotoToAdmin(update.getMessage());
+                            cardYes(groupChatId, "\n\n" + user.getFirstname() + " " + user.getLastname() + "\n " + user.getChatId());
+
+                        }
+                    }
+                    if (STATUSRU != null) {
+                        if (STATUSRU.equals("cardPhoto") && update.getMessage().getPhoto() != null) {
+                            user.setCardPhoto("/home/sardor/Backend/Project/TeleBot/src/main/resources/passport/" + photoSize.getWidth().toString() + " x " + photoSize.getHeight().toString() + ".jpg");
+                            userRepository.save(user);
+                            update.getMessage().setPhoto(null);
+                            returnMassage.setChatId(update.getMessage().getChatId());
+                            step4Ru(update);
+                            forwardPhotoToAdmin(update.getMessage());
+                            cardYes(groupChatId, user.getFirstname() + " " + user.getLastname() + "\n " + user.getChatId());
+                        }
+                    }
+
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            }
+
+            if (update.getMessage().hasDocument()) {
+                GetFile getFile = new GetFile(update.getMessage().getDocument().getFileId());
+                try {
+                    User user = userRepository.findByChatId(update.getMessage().getChatId()).get();
+                    org.telegram.telegrambots.meta.api.objects.File tgFile = execute(getFile);
+                    String fileURL = tgFile.getFileUrl(getBotToken());
+                    System.out.println(fileURL);
+                    System.out.println(update.getMessage().getDocument().getFileName());
+                    URL url = new URL(fileURL);
+                    InputStream inputStream = url.openStream();
+                    FileUtils.copyInputStreamToFile(inputStream, new java.io.File("/home/sardor/Backend/Project/TeleBot/src/main/resources/passport/" + update.getMessage().getDocument().getFileName()));
                     if (STATUSUZ.equals("passportPhoto") && update.getMessage().getPhoto() != null) {
-                        user.setPassportPhoto("/home/sardor/Backend/Project/TeleBot/src/main/resources/passport/" + photoSize.getWidth().toString() + " x " + photoSize.getHeight().toString() + ".jpg");
+                        user.setPassportPhoto1("/home/sardor/Backend/Project/TeleBot/src/main/resources/passport/" + update.getMessage().getDocument().getFileName());
                         userRepository.save(user);
                         update.getMessage().setPhoto(null);
                         returnMassage.setChatId(update.getMessage().getChatId());
                         step4Uz(update);
+                        forwardPhotoToAdmin(update.getMessage());
 
-                    }
-                }
-                if(STATUSRU!=null){
-                    if (STATUSRU.equals("passportPhoto") && update.getMessage().getPhoto() != null) {
-                        user.setPassportPhoto("/home/sardor/Backend/Project/TeleBot/src/main/resources/passport/" + photoSize.getWidth().toString() + " x " + photoSize.getHeight().toString() + ".jpg");
+                    } else if (STATUSRU.equals("passportPhoto") && update.getMessage().getPhoto() != null) {
+                        user.setPassportPhoto1("/home/sardor/Backend/Project/TeleBot/src/main/resources/passport/" + update.getMessage().getDocument().getFileName());
                         userRepository.save(user);
                         update.getMessage().setPhoto(null);
                         returnMassage.setChatId(update.getMessage().getChatId());
                         step4Ru(update);
                         forwardPhotoToAdmin(update.getMessage());
-                        yesNoAdmin(groupChatId, "prover");
                     }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-
-                if (STATUSUZ != null) {
-                    if (STATUSUZ.equals("cardPhoto") && update.getMessage().getPhoto() != null) {
-                        user.setCardPhoto("/home/sardor/Backend/Project/TeleBot/src/main/resources/passport/" + photoSize.getWidth().toString() + " x " + photoSize.getHeight().toString() + ".jpg");
-                        userRepository.save(user);
-                        update.getMessage().setPhoto(null);
-                        returnMassage.setChatId(update.getMessage().getChatId());
-                        step4Uz(update);
-
-                    }
-                }
-                if(STATUSRU!=null){
-                    if (STATUSRU.equals("cardPhoto") && update.getMessage().getPhoto() != null) {
-                        user.setCardPhoto("/home/sardor/Backend/Project/TeleBot/src/main/resources/passport/" + photoSize.getWidth().toString() + " x " + photoSize.getHeight().toString() + ".jpg");
-                        userRepository.save(user);
-                        update.getMessage().setPhoto(null);
-                        returnMassage.setChatId(update.getMessage().getChatId());
-                        step4Ru(update);
-                        forwardPhotoToAdmin(update.getMessage());
-                        yesNoAdmin(groupChatId, "Checker");
-                    }
-                }
-
-            } catch (Exception e) {
-                e.printStackTrace();
             }
 
-        }
-        if (update.getMessage().hasDocument()) {
-            GetFile getFile = new GetFile(update.getMessage().getDocument().getFileId());
-            try {
-                User user = userRepository.findByChatId(update.getMessage().getChatId()).get();
-                org.telegram.telegrambots.meta.api.objects.File tgFile = execute(getFile);
-                String fileURL = tgFile.getFileUrl(getBotToken());
-                System.out.println(fileURL);
-                System.out.println(update.getMessage().getDocument().getFileName());
-                URL url = new URL(fileURL);
-                InputStream inputStream = url.openStream();
-                FileUtils.copyInputStreamToFile(inputStream, new java.io.File("/home/sardor/Backend/Project/TeleBot/src/main/resources/passport/" + update.getMessage().getDocument().getFileName()));
-                if (STATUSUZ.equals("passportPhoto") && update.getMessage().getPhoto() != null) {
-                    user.setPassportPhoto("/home/sardor/Backend/Project/TeleBot/src/main/resources/passport/" + update.getMessage().getDocument().getFileName());
-                    userRepository.save(user);
-                    update.getMessage().setPhoto(null);
-                    returnMassage.setChatId(update.getMessage().getChatId());
-                    step4Uz(update);
+
+            if (update.getMessage().hasPhoto()) {
+                userId = update.getMessage().getChatId();
+                try {
                     forwardPhotoToAdmin(update.getMessage());
-
-                } else if (STATUSRU.equals("passportPhoto") && update.getMessage().getPhoto() != null) {
-                    user.setPassportPhoto("/home/sardor/Backend/Project/TeleBot/src/main/resources/passport/" + update.getMessage().getDocument().getFileName());
-                    userRepository.save(user);
-                    update.getMessage().setPhoto(null);
-                    returnMassage.setChatId(update.getMessage().getChatId());
-                    step4Ru(update);
-                    forwardPhotoToAdmin(update.getMessage());
+                    yesNoAdmin(groupChatId, "prover");
+                } catch (TelegramApiException e) {
+                    throw new RuntimeException(e);
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
 
-
-        if (update.getMessage().hasPhoto()) {
-            userId = update.getMessage().getChatId();
-            try {
-                forwardPhotoToAdmin(update.getMessage());
-                yesNoAdmin(groupChatId, "prover");
-            } catch (TelegramApiException e) {
-                throw new RuntimeException(e);
-            }
-         /*   if (STATUSRU.equals("passportPhoto")&& update.getMessage().getPhoto() != null){
-                User user = this.userRepository.findByChatId(userId).get();
-             //   returnMassage.setChatId(update.getMessage().getChatId());
-             //   this.userRepository.save(user);
-                if (update.getMessage().getPhoto() != null && user.getPassportPhoto() != null) {
-                    try {
-                        update.getMessage().setPhoto(null);
-                        returnMassage.setChatId(update.getMessage().getChatId());
-                        step4Ru(update);
-                    } catch (TelegramApiException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            }*/
-//            if (STATUSRU.equals("cardPhoto") && update.getMessage().getPhoto() != null) {
-//                User user = this.userRepository.findByChatId(userId).get();
-//                returnMassage.setChatId(update.getMessage().getChatId());
-//                user.setCardPhoto("image");
-//                this.userRepository.save(user);
-//                if (update.getMessage().getPhoto() != null && user.getCardPhoto() != null) {
-//                    try {
-//                        update.getMessage().setPhoto(null);
-//                        returnMassage.setChatId(update.getMessage().getChatId());
-//                        step4Ru(update);
-//                    } catch (TelegramApiException e) {
-//                        throw new RuntimeException(e);
-//                    }
-//                }
-//            }
-            //   else if (STATUSUZ.equals("passportPhoto")&& update.getMessage().getPhoto() != null){
-            // User user = this.userRepository.findByChatId(userId).get();
-            //   returnMassage.setChatId(update.getMessage().getChatId());
-            //  user.setPassportPhoto("image");
-            // this.userRepository.save(user);
-            //  if (update.getMessage().getPhoto() != null && user.getPassportPhoto() != null) {
-            //      try {
-            //        update.getMessage().setPhoto(null);
-            //        returnMassage.setChatId(update.getMessage().getChatId());
-            //         step4Uz(update);
-            //    } catch (TelegramApiException e) {
-            //        throw new RuntimeException(e);
-            //        }
-            //  }
-            // }
-//            else if (STATUSUZ.equals("cardPhoto") && update.getMessage().getPhoto() != null) {
-//                User user = this.userRepository.findByChatId(userId).get();
-//                returnMassage.setChatId(update.getMessage().getChatId());
-//                user.setCardPhoto("image");
-//                this.userRepository.save(user);
-//                if (update.getMessage().getPhoto() != null && user.getCardPhoto() != null) {
-//                    try {
-//                        update.getMessage().setPhoto(null);
-//                        returnMassage.setChatId(update.getMessage().getChatId());
-//                        step4Uz(update);
-//                    } catch (TelegramApiException e) {
-//                        throw new RuntimeException(e);
-//                    }
-//                }
-//            }
           /*  if (update.getMessage().getPhoto() != null) {
                 downloadPhoto(update);
             }*/
@@ -288,12 +487,12 @@ public class TelegramBotController extends TelegramLongPollingBot {
                 user.setCardPhoto(update.getMessage().getPhoto().toString());
                 this.userRepository.save(user);
             }*/
-            try {
-                execute(returnMassage);
-            } catch (TelegramApiException e) {
-                throw new RuntimeException(e);
+                try {
+                    execute(returnMassage);
+                } catch (TelegramApiException e) {
+                    throw new RuntimeException(e);
+                }
             }
-        }
       /*  if (update.hasMessage()) {
             if (update.getMessage().hasContact()) {
                 if (update.getMessage().getContact().getPhoneNumber() != null) {
@@ -316,171 +515,397 @@ public class TelegramBotController extends TelegramLongPollingBot {
             }
         }*/
 
-        if (update.getMessage().hasText()) {
-            if(update.getMessage().getText().equals("/send")){
-                SendMessage sendMessage=new SendMessage();
-                if(update.getMessage().getChatId().equals(groupChatId));
-                var users=userRepository.findAll();
-                String textToSend=users.toString();
+            if (update.getMessage().hasText()) {
+                String textMes = update.getMessage().getText();
+                String[] split = textMes.split(" ");
+                if (update.getMessage().getChatId().equals(groupChatId)) {
+                    if (split[0].equals("/chat")) {
+                        long chatId = Long.parseLong(split[1]);
+                        Optional<User> optional = userRepository.findByChatId(chatId);
+                        if (optional.isEmpty()) {
+                            SendMessage sendMessage = new SendMessage();
+                            sendMessage.setChatId(groupChatId);
+                            sendMessage.setText("Пользователь не найден");
+                            try {
+                                execute(sendMessage);
+                            } catch (TelegramApiException e) {
+                                throw new RuntimeException(e);
+                            }
+                            return;
+                        }
+                        User user = optional.get();
+                        SendMessage sendMessage = new SendMessage();
+                        sendMessage.setChatId(groupChatId);
+                        String textToSend = user.toString();
+                        sendPhotoToTelegram(groupChatId, user.getUsername(), user.getPassportPhoto1());
+                        sendPhotoToTelegram(groupChatId, user.getUsername(), user.getPassportPhoto2());
 
-                for(User user1:users){
-                    sendPhotoToTelegram(groupChatId,user1.getUsername(),user1.getPassportPhoto());
-                    sendPhotoToTelegram(groupChatId,user1.getUsername(),user1.getCardPhoto());
+                        sendPhotoToTelegram(groupChatId, user.getUsername(), user.getCardPhoto());
+                        sendMessage.setText(textToSend);
+                        try {
+                            execute(sendMessage);
+                        } catch (TelegramApiException e) {
+                            throw new RuntimeException(e);
+                        }
 
-                }
-                sendMessage.setText(textToSend);
-                sendMessage.setChatId(groupChatId);
-                try {
-                    execute(sendMessage);
-                } catch (TelegramApiException e) {
-                    throw new RuntimeException(e);
-                }
-
-
-            }
-
-            if (update.getMessage().getText().equals("/start")) {
-                returnMassage = buttonStart(update.getMessage());
-            }
-
-            if (update.getMessage().getText().equals("\uD83C\uDDFA\uD83C\uDDFF Uz")) {
-                try {
-                    if (!userRepository.existsByChatId(update.getMessage().getChatId())) {
-                        register(update.getMessage());
                     }
-                } catch (TelegramApiException e) {
-                    throw new RuntimeException(e);
                 }
-                returnMassage = uz(update.getMessage());
-            }
-            if (update.getMessage().getText().equals("\uD83C\uDDF7\uD83C\uDDFA Ru")) {
-                try {
-                    if (!userRepository.existsByChatId(update.getMessage().getChatId())) {
-                        register(update.getMessage());
-                    }
-                } catch (TelegramApiException e) {
-                    throw new RuntimeException(e);
-                }
-                returnMassage = ru(update.getMessage());
-            }
-            if (update.getMessage().getText().equals("◀️ Ortga qaytish") || update.getMessage().getText().equals("◀️ Назад")) {
-                returnMassage = buttonStart(update.getMessage());
-            }
-            if (update.getMessage().getText().equals("▶\uFE0F Keyingisi")) {
-                Optional<User> optional = this.userRepository.findByChatId(update.getMessage().getChatId());
 
-                try {
-                    User user = optional.get();
-                    if (!user.getSuccess().equals("true")) {
-                        update.getMessage().setText(null);
-                        step4Uz(update);
-                    } else {
-                        execute(step5Uz(update.getMessage().getChatId()));
-                    }
-                } catch (TelegramApiException e) {
-                    throw new RuntimeException(e);
-                }
-                if (optional.isEmpty()) {
+
+                if (update.getMessage().getText().equals("/send")) {
                     SendMessage sendMessage = new SendMessage();
-                    sendMessage.setChatId(update.getMessage().getChatId());
-                    sendMessage.setText("Foydalanuvchi ro'yxatdan o'tmagan!");
+                    if (update.getMessage().getChatId().equals(groupChatId)) ;
+                    var users = userRepository.findAll();
+                    String textToSend = users.toString();
+
+                    for (User user1 : users) {
+                        sendPhotoToTelegram(groupChatId, user1.getUsername(), user1.getPassportPhoto1());
+                        sendPhotoToTelegram(groupChatId, user1.getUsername(), user1.getCardPhoto());
+
+                    }
+                    sendMessage.setText(textToSend);
+                    sendMessage.setChatId(groupChatId);
                     try {
                         execute(sendMessage);
                     } catch (TelegramApiException e) {
                         throw new RuntimeException(e);
                     }
+
+
                 }
-            } else if (STATUSUZ != null && STATUSUZ.equals("nemeClinick") && update.getMessage().getText() != "▶\uFE0F Keyingisi" && update.getMessage().getText() != null) {
-                User user = this.userRepository.findByChatId(update.getMessage().getChatId()).get();
-                returnMassage.setChatId(update.getMessage().getChatId());
-                user.setClinicName(update.getMessage().getText());
-                userRepository.save(user);
-                if (update.getMessage().getText() != null && user.getFullTitle() != null) {
+                if (STATUSRU != null) {
+                    if (STATUSRU.equals("location")) {
+                        userId = update.getMessage().getChatId();
+                        User userFind = userRepository.findByChatId(update.getMessage().getChatId()).get();
+
+                        String message = update.getMessage().getText() + "\n " + userFind.getFirstname() + " " + userFind.getLastname() + "\n " + userFind.getChatId();
+
+                        try {
+                            loactionYes(groupChatId, message);
+                        } catch (TelegramApiException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                }
+                if (STATUSRU != null) {
+                    if (STATUSRU.equals("phoneNumber")) {
+                        userId = update.getMessage().getChatId();
+                        User userFind = userRepository.findByChatId(update.getMessage().getChatId()).get();
+                        String message = update.getMessage().getText() + "\n " + userFind.getFirstname() + " " + userFind.getLastname() + "\n " + userFind.getChatId();
+
+                        try {
+                            phoneYes(groupChatId, message);
+                        } catch (TelegramApiException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                }
+                if (STATUSRU != null) {
+                    if (STATUSRU.equals("money")) {
+                        userId = update.getMessage().getChatId();
+                        User userFind = userRepository.findByChatId(update.getMessage().getChatId()).get();
+
+                        String message = update.getMessage().getText() + "\n " + userFind.getFirstname() + " " + userFind.getLastname() + "\n " + userFind.getChatId();
+
+                        try {
+                            moneyYes(groupChatId, message);
+                        } catch (TelegramApiException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                }
+                if (STATUSRU != null) {
+                    if (STATUSRU.equals("nemeClinick")) {
+                        userId = update.getMessage().getChatId();
+                        User userFind = userRepository.findByChatId(update.getMessage().getChatId()).get();
+
+                        String message = update.getMessage().getText() + "\n " + userFind.getFirstname() + " " + userFind.getLastname() + "\n " + userFind.getChatId();
+
+                        try {
+                            clinicYes(groupChatId, message);
+                        } catch (TelegramApiException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+
+                }
+                if (STATUSRU != null) {
+                    if (STATUSRU.equals("fulTitle")) {
+                        userId = update.getMessage().getChatId();
+                        User userFind = userRepository.findByChatId(update.getMessage().getChatId()).get();
+                        String message = update.getMessage().getText() + "\n " + userFind.getFirstname() + " " + userFind.getLastname() + "\n " + userFind.getChatId();
+                        try {
+                            operationYes(groupChatId, message);
+                        } catch (TelegramApiException e) {
+                            throw new RuntimeException(e);
+                        }
+
+                    }
+
+                }
+
+
+                if (update.getMessage().getText().equals("/start")) {
+                    returnMassage = buttonStart(update.getMessage());
+                }
+
+                if (update.getMessage().getText().equals("\uD83C\uDDFA\uD83C\uDDFF Uz")) {
                     try {
+                        if (!userRepository.existsByChatId(update.getMessage().getChatId())) {
+                            LANGUAGE = "uz";
+                            register(update.getMessage());
+                        }
+                    } catch (TelegramApiException e) {
+                        throw new RuntimeException(e);
+                    }
+                    returnMassage = uz(update.getMessage());
+                }
+                if (update.getMessage().getText().equals("\uD83C\uDDF7\uD83C\uDDFA Ru")) {
+                    try {
+                        if (!userRepository.existsByChatId(update.getMessage().getChatId())) {
+                            LANGUAGE = "ru";
+                            register(update.getMessage());
+                        }
+                    } catch (TelegramApiException e) {
+                        throw new RuntimeException(e);
+                    }
+                    returnMassage = ru(update.getMessage());
+                }
+                if (update.getMessage().getText().equals("◀️ Ortga qaytish") || update.getMessage().getText().equals("◀️ Назад")) {
+                    STATUSUZ = null;
+                    STATUSRU = null;
+                    LANGUAGE = null;
+                    returnMassage = buttonStart(update.getMessage());
+                }
+                if (update.getMessage().getText().equals("▶\uFE0F Keyingisi")) {
+                    Optional<User> optional = this.userRepository.findByChatId(update.getMessage().getChatId());
+
+                    try {
+                        User user = optional.get();
+                        if (!user.getSuccess().equals("true")) {
+                            update.getMessage().setText(null);
+                            step4Uz(update);
+                        } else {
+                            execute(step5Uz(update.getMessage().getChatId()));
+                        }
+                    } catch (TelegramApiException e) {
+                        throw new RuntimeException(e);
+                    }
+                    if (optional.isEmpty()) {
+                        SendMessage sendMessage = new SendMessage();
+                        sendMessage.setChatId(update.getMessage().getChatId());
+                        sendMessage.setText("Foydalanuvchi ro'yxatdan o'tmagan!");
+                        try {
+                            execute(sendMessage);
+                        } catch (TelegramApiException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                } else if (STATUSUZ != null && STATUSUZ.equals("firstname") && !update.getMessage().getText().equals("▶\uFE0F Keyingisi") && update.getMessage().getText() != null && !update.getMessage().getText().equals("◀️ Ortga qaytish") && !update.getMessage().getText().equals("\uD83C\uDDFA\uD83C\uDDFF Uz")
+                        && !update.getMessage().getText().equals("◀️ Назад") && !update.getMessage().getText().equals("\uD83C\uDDF7\uD83C\uDDFA Ru") && !update.getMessage().getText().equals("/start")) {
+                    User user = this.userRepository.findByChatId(update.getMessage().getChatId()).get();
+                    returnMassage.setChatId(update.getMessage().getChatId());
+                    user.setFirstname(update.getMessage().getText());
+                    this.userRepository.save(user);
+                    if (update.getMessage().getText() != null && user.getFirstname() != null) {
+                        try {
+                            returnMassage.setChatId(update.getMessage().getChatId());
+                            step4Uz(update);
+                        } catch (TelegramApiException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                } else if (STATUSUZ != null && STATUSUZ.equals("lastname") && !update.getMessage().getText().equals("▶\uFE0F Keyingisi") && update.getMessage().getText() != null && !update.getMessage().getText().equals("◀️ Ortga qaytish") && !update.getMessage().getText().equals("\uD83C\uDDFA\uD83C\uDDFF Uz")
+                        && !update.getMessage().getText().equals("◀️ Назад") && !update.getMessage().getText().equals("\uD83C\uDDF7\uD83C\uDDFA Ru") && !update.getMessage().getText().equals("/start")) {
+                    User user = this.userRepository.findByChatId(update.getMessage().getChatId()).get();
+                    returnMassage.setChatId(update.getMessage().getChatId());
+                    user.setLastname(update.getMessage().getText());
+                    this.userRepository.save(user);
+                    if (update.getMessage().getText() != null && user.getLastname() != null) {
+                        try {
+                            returnMassage.setChatId(update.getMessage().getChatId());
+                            step4Uz(update);
+                        } catch (TelegramApiException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                } else if (STATUSUZ != null && STATUSUZ.equals("nemeClinick") && !update.getMessage().getText().equals("▶\uFE0F Keyingisi") && update.getMessage().getText() != null && !update.getMessage().getText().equals("◀️ Ortga qaytish") && !update.getMessage().getText().equals("\uD83C\uDDFA\uD83C\uDDFF Uz")
+                        && !update.getMessage().getText().equals("◀️ Назад") && !update.getMessage().getText().equals("\uD83C\uDDF7\uD83C\uDDFA Ru") && !update.getMessage().getText().equals("/start")) {
+                    User user = this.userRepository.findByChatId(update.getMessage().getChatId()).get();
+                    returnMassage.setChatId(update.getMessage().getChatId());
+                    user.setClinicName(update.getMessage().getText());
+                    userRepository.save(user);
+                    if (update.getMessage().getText() != null && user.getFullTitle() != null) {
+                        try {
+                            returnMassage.setChatId(update.getMessage().getChatId());
+                            step4Uz(update);
+                        } catch (TelegramApiException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                } else if (STATUSUZ != null && STATUSUZ.equals("fulTitle") && !update.getMessage().getText().equals("▶\uFE0F Keyingisi") && update.getMessage().getText() != null && !update.getMessage().getText().equals("◀️ Ortga qaytish") && !update.getMessage().getText().equals("\uD83C\uDDFA\uD83C\uDDFF Uz")
+                        && !update.getMessage().getText().equals("◀️ Назад") && !update.getMessage().getText().equals("\uD83C\uDDF7\uD83C\uDDFA Ru") && !update.getMessage().getText().equals("/start")) {
+                    User user = this.userRepository.findByChatId(update.getMessage().getChatId()).get();
+                    returnMassage.setChatId(update.getMessage().getChatId());
+                    user.setFullTitle(update.getMessage().getText());
+                    userRepository.save(user);
+                    if (update.getMessage().getText() != null && user.getFullTitle() != null) {
                         returnMassage.setChatId(update.getMessage().getChatId());
-                        step4Uz(update);
-                    } catch (TelegramApiException e) {
-                        throw new RuntimeException(e);
+                        try {
+                            step4Uz(update);
+                        } catch (TelegramApiException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
-                }
-            } else if (STATUSUZ != null && STATUSUZ.equals("fulTitle") && update.getMessage().getText() != "▶\uFE0F Keyingisi" && update.getMessage().getText() != null) {
-                User user = this.userRepository.findByChatId(update.getMessage().getChatId()).get();
-                returnMassage.setChatId(update.getMessage().getChatId());
-                user.setFullTitle(update.getMessage().getText());
-                userRepository.save(user);
-                if (update.getMessage().getText() != null && user.getFullTitle() != null) {
+                } else if (STATUSUZ != null && STATUSUZ.equals("money") && !update.getMessage().getText().equals("▶\uFE0F Keyingisi") && update.getMessage().getText() != null && !update.getMessage().getText().equals("◀️ Ortga qaytish") && !update.getMessage().getText().equals("\uD83C\uDDFA\uD83C\uDDFF Uz")
+                        && !update.getMessage().getText().equals("◀️ Назад") && !update.getMessage().getText().equals("\uD83C\uDDF7\uD83C\uDDFA Ru") && !update.getMessage().getText().equals("/start")) {
+                    User user = this.userRepository.findByChatId(update.getMessage().getChatId()).get();
+                    returnMassage.setChatId(update.getMessage().getChatId());
+                    user.setOperationCost(update.getMessage().getText());
+                    userRepository.save(user);
                     returnMassage.setChatId(update.getMessage().getChatId());
                     try {
                         step4Uz(update);
                     } catch (TelegramApiException e) {
                         throw new RuntimeException(e);
                     }
-                }
-            } else if (STATUSUZ != null && STATUSUZ.equals("money") && update.getMessage().getText() != "▶\uFE0F Keyingisi" && update.getMessage().getText() != null) {
-                User user = this.userRepository.findByChatId(update.getMessage().getChatId()).get();
-                returnMassage.setChatId(update.getMessage().getChatId());
-                user.setOperationCost(update.getMessage().getText());
-                userRepository.save(user);
-                returnMassage.setChatId(update.getMessage().getChatId());
-                try {
-                    step4Uz(update);
-                } catch (TelegramApiException e) {
-                    throw new RuntimeException(e);
-                }
-            } else if (STATUSUZ != null && STATUSUZ.equals("location") && update.getMessage().getText() != "▶\uFE0F Keyingisi" && update.getMessage().getText() != null) {
-                User user = this.userRepository.findByChatId(update.getMessage().getChatId()).get();
-                returnMassage.setChatId(update.getMessage().getChatId());
-                user.setRegistration(update.getMessage().getText());
-                userRepository.save(user);
-                returnMassage.setChatId(update.getMessage().getChatId());
-                try {
-                    step4Uz(update);
-                } catch (TelegramApiException e) {
-                    throw new RuntimeException(e);
-                }
-            } else if (STATUSUZ != null && STATUSUZ.equals("phoneNumber") && update.getMessage().getText() != "▶\uFE0F Keyingisi" && update.getMessage().getText() != null) {
-                long chatId = update.getMessage().getChatId();
-                User user = this.userRepository.findByChatId(chatId).get();
-                returnMassage.setChatId(update.getMessage().getChatId());
-                user.setPhoneNumber(update.getMessage().getText());
-                userRepository.save(user);
-                returnMassage.setChatId(update.getMessage().getChatId());
-                try {
-                    step4Uz(update);
-                } catch (TelegramApiException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-
-            if (update.getMessage().getText().equals("▶\uFE0F Дальше")) {
-                Optional<User> optional = this.userRepository.findByChatId(update.getMessage().getChatId());
-                try {
-                    User user = optional.get();
-                    if (!user.getSuccess().equals("true")) {
-                        update.getMessage().setText(null);
-                        step4Ru(update);
-                    } else {
-                        execute(step5Ru(update.getMessage().getChatId()));
-                    }
-                } catch (TelegramApiException e) {
-                    throw new RuntimeException(e);
-                }
-                if (optional.isEmpty()) {
-                    SendMessage sendMessage = new SendMessage();
-                    sendMessage.setChatId(update.getMessage().getChatId());
-                    sendMessage.setText("Пользователь не зарегистрирован!");
+                } else if (STATUSUZ != null && STATUSUZ.equals("location") && !update.getMessage().getText().equals("▶\uFE0F Keyingisi") && update.getMessage().getText() != null && !update.getMessage().getText().equals("◀️ Ortga qaytish") && !update.getMessage().getText().equals("\uD83C\uDDFA\uD83C\uDDFF Uz")
+                        && !update.getMessage().getText().equals("◀️ Назад") && !update.getMessage().getText().equals("\uD83C\uDDF7\uD83C\uDDFA Ru") && !update.getMessage().getText().equals("/start")) {
+                    User user = this.userRepository.findByChatId(update.getMessage().getChatId()).get();
+                    returnMassage.setChatId(update.getMessage().getChatId());
+                    user.setRegistration(update.getMessage().getText());
+                    userRepository.save(user);
+                    returnMassage.setChatId(update.getMessage().getChatId());
                     try {
-                        execute(sendMessage);
+                        step4Uz(update);
+                    } catch (TelegramApiException e) {
+                        throw new RuntimeException(e);
+                    }
+                } else if (STATUSUZ != null && STATUSUZ.equals("phoneNumber") && !update.getMessage().getText().equals("▶\uFE0F Keyingisi") && update.getMessage().getText() != null && !update.getMessage().getText().equals("◀️ Ortga qaytish") && !update.getMessage().getText().equals("\uD83C\uDDFA\uD83C\uDDFF Uz")
+                        && !update.getMessage().getText().equals("◀️ Назад") && !update.getMessage().getText().equals("\uD83C\uDDF7\uD83C\uDDFA Ru") && !update.getMessage().getText().equals("/start")) {
+                    long chatId = update.getMessage().getChatId();
+                    User user = this.userRepository.findByChatId(chatId).get();
+                    returnMassage.setChatId(update.getMessage().getChatId());
+                    user.setPhoneNumber(update.getMessage().getText());
+                    userRepository.save(user);
+                    returnMassage.setChatId(update.getMessage().getChatId());
+                    try {
+                        step4Uz(update);
                     } catch (TelegramApiException e) {
                         throw new RuntimeException(e);
                     }
                 }
-            } else if (STATUSRU != null && STATUSRU.equals("nemeClinick") && update.getMessage().getText() != ("▶\uFE0F Дальше") && update.getMessage().getText() != null) {
-                User user = this.userRepository.findByChatId(update.getMessage().getChatId()).get();
-                returnMassage.setChatId(update.getMessage().getChatId());
-                user.setClinicName(update.getMessage().getText());
-                userRepository.save(user);
-                if (update.getMessage().getText() != null && user.getFullTitle() != null) {
+
+                if (update.getMessage().getText().equals("▶\uFE0F Дальше")) {
+                    Optional<User> optional = this.userRepository.findByChatId(update.getMessage().getChatId());
+                    try {
+                        User user = optional.get();
+                        if (!user.getSuccess().equals("true")) {
+                            update.getMessage().setText(null);
+                            step4Ru(update);
+                        } else {
+                            execute(step5Ru(update.getMessage().getChatId()));
+                        }
+                    } catch (TelegramApiException e) {
+                        throw new RuntimeException(e);
+                    }
+                    if (optional.isEmpty()) {
+                        SendMessage sendMessage = new SendMessage();
+                        sendMessage.setChatId(update.getMessage().getChatId());
+                        sendMessage.setText("Пользователь не зарегистрирован!");
+                        try {
+                            execute(sendMessage);
+                        } catch (TelegramApiException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                } else if (STATUSRU != null && STATUSRU.equals("firstname") && !update.getMessage().getText().equals("▶\uFE0F Дальше") && update.getMessage().getText() != null && !update.getMessage().getText().equals("◀️ Назад") && !update.getMessage().getText().equals("\uD83C\uDDF7\uD83C\uDDFA Ru")
+                        && !update.getMessage().getText().equals("◀️ Ortga qaytish") && !update.getMessage().getText().equals("\uD83C\uDDFA\uD83C\uDDFF Uz") && !update.getMessage().getText().equals("/start")) {
+                    User user = this.userRepository.findByChatId(update.getMessage().getChatId()).get();
+                    returnMassage.setChatId(update.getMessage().getChatId());
+                    user.setFirstname(update.getMessage().getText());
+                    this.userRepository.save(user);
+                    if (update.getMessage().getText() != null && user.getFirstname() != null) {
+                        returnMassage.setChatId(update.getMessage().getChatId());
+                        try {
+                            step4Ru(update);
+                        } catch (TelegramApiException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                } else if (STATUSRU != null && STATUSRU.equals("lastname") && !update.getMessage().getText().equals("▶\uFE0F Дальше") && update.getMessage().getText() != null && !update.getMessage().getText().equals("◀️ Назад") && !update.getMessage().getText().equals("\uD83C\uDDF7\uD83C\uDDFA Ru")
+                        && !update.getMessage().getText().equals("◀️ Ortga qaytish") && !update.getMessage().getText().equals("\uD83C\uDDFA\uD83C\uDDFF Uz") && !update.getMessage().getText().equals("/start")) {
+                    User user = this.userRepository.findByChatId(update.getMessage().getChatId()).get();
+                    returnMassage.setChatId(update.getMessage().getChatId());
+                    user.setLastname(update.getMessage().getText());
+                    this.userRepository.save(user);
+                    if (update.getMessage().getText() != null && user.getLastname() != null) {
+                        returnMassage.setChatId(update.getMessage().getChatId());
+                        try {
+                            step4Ru(update);
+                        } catch (TelegramApiException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                } else if (STATUSRU != null && STATUSRU.equals("nemeClinick") && !update.getMessage().getText().equals("▶\uFE0F Дальше") && update.getMessage().getText() != null && !update.getMessage().getText().equals("◀️ Назад") && !update.getMessage().getText().equals("\uD83C\uDDF7\uD83C\uDDFA Ru")
+                        && !update.getMessage().getText().equals("◀️ Ortga qaytish") && !update.getMessage().getText().equals("\uD83C\uDDFA\uD83C\uDDFF Uz") && !update.getMessage().getText().equals("/start")) {
+                    User user = this.userRepository.findByChatId(update.getMessage().getChatId()).get();
+                    returnMassage.setChatId(update.getMessage().getChatId());
+                    user.setClinicName(update.getMessage().getText());
+                    userRepository.save(user);
+                    if (update.getMessage().getText() != null && user.getFullTitle() != null) {
+                        returnMassage.setChatId(update.getMessage().getChatId());
+                        try {
+                            step4Ru(update);
+                        } catch (TelegramApiException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                } else if (STATUSRU != null && STATUSRU.equals("fulTitle") && !update.getMessage().getText().equals("▶\uFE0F Дальше") && update.getMessage().getText() != null && !update.getMessage().getText().equals("◀️ Назад") && !update.getMessage().getText().equals("\uD83C\uDDF7\uD83C\uDDFA Ru")
+                        && !update.getMessage().getText().equals("◀️ Ortga qaytish") && !update.getMessage().getText().equals("\uD83C\uDDFA\uD83C\uDDFF Uz") && !update.getMessage().getText().equals("/start")) {
+                    User user = this.userRepository.findByChatId(update.getMessage().getChatId()).get();
+                    returnMassage.setChatId(update.getMessage().getChatId());
+                    user.setFullTitle(update.getMessage().getText());
+                    userRepository.save(user);
+                    if (update.getMessage().getText() != null && user.getFullTitle() != null) {
+                        returnMassage.setChatId(update.getMessage().getChatId());
+                        try {
+                            step4Ru(update);
+                        } catch (TelegramApiException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                } else if (STATUSRU != null && STATUSRU.equals("money") && !update.getMessage().getText().equals("▶\uFE0F Дальше") && update.getMessage().getText() != null && !update.getMessage().getText().equals("◀️ Назад") && !update.getMessage().getText().equals("\uD83C\uDDF7\uD83C\uDDFA Ru")
+                        && !update.getMessage().getText().equals("◀️ Ortga qaytish") && !update.getMessage().getText().equals("\uD83C\uDDFA\uD83C\uDDFF Uz") && !update.getMessage().getText().equals("/start")) {
+                    User user = this.userRepository.findByChatId(update.getMessage().getChatId()).get();
+                    returnMassage.setChatId(update.getMessage().getChatId());
+                    user.setOperationCost(update.getMessage().getText());
+                    userRepository.save(user);
+                    returnMassage.setChatId(update.getMessage().getChatId());
+                    try {
+                        step4Ru(update);
+                    } catch (TelegramApiException e) {
+                        throw new RuntimeException(e);
+                    }
+                } else if (STATUSRU != null && STATUSRU.equals("location") && !update.getMessage().getText().equals("▶\uFE0F Дальше") && update.getMessage().getText() != null && !update.getMessage().getText().equals("◀️ Назад") && !update.getMessage().getText().equals("\uD83C\uDDF7\uD83C\uDDFA Ru")
+                        && !update.getMessage().getText().equals("◀️ Ortga qaytish") && !update.getMessage().getText().equals("\uD83C\uDDFA\uD83C\uDDFF Uz") && !update.getMessage().getText().equals("/start")) {
+                    User user = this.userRepository.findByChatId(update.getMessage().getChatId()).get();
+                    returnMassage.setChatId(update.getMessage().getChatId());
+                    user.setRegistration(update.getMessage().getText());
+                    userRepository.save(user);
+                    returnMassage.setChatId(update.getMessage().getChatId());
+                    try {
+                        step4Ru(update);
+                    } catch (TelegramApiException e) {
+                        throw new RuntimeException(e);
+                    }
+                } else if (STATUSRU != null && STATUSRU.equals("phoneNumber") && !update.getMessage().getText().equals("▶\uFE0F Дальше") && update.getMessage().getText() != null && !update.getMessage().getText().equals("◀️ Назад") && !update.getMessage().getText().equals("\uD83C\uDDF7\uD83C\uDDFA Ru")
+                        && !update.getMessage().getText().equals("◀️ Ortga qaytish") && !update.getMessage().getText().equals("\uD83C\uDDFA\uD83C\uDDFF Uz") && !update.getMessage().getText().equals("/start")) {
+                    long chatId = update.getMessage().getChatId();
+                    User user = this.userRepository.findByChatId(chatId).get();
+                    returnMassage.setChatId(update.getMessage().getChatId());
+                    user.setPhoneNumber(update.getMessage().getText());
+                    userRepository.save(user);
                     returnMassage.setChatId(update.getMessage().getChatId());
                     try {
                         step4Ru(update);
@@ -488,71 +913,15 @@ public class TelegramBotController extends TelegramLongPollingBot {
                         throw new RuntimeException(e);
                     }
                 }
-            } else if (STATUSRU != null && STATUSRU.equals("fulTitle") && update.getMessage().getText() != ("▶\uFE0F Дальше") && update.getMessage().getText() != null) {
-                User user = this.userRepository.findByChatId(update.getMessage().getChatId()).get();
-                returnMassage.setChatId(update.getMessage().getChatId());
-                user.setFullTitle(update.getMessage().getText());
-                userRepository.save(user);
-                if (update.getMessage().getText() != null && user.getFullTitle() != null) {
-                    returnMassage.setChatId(update.getMessage().getChatId());
-                    try {
-                        step4Ru(update);
-                    } catch (TelegramApiException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            } else if (STATUSRU != null && STATUSRU.equals("money") && update.getMessage().getText() != ("▶\uFE0F Дальше") && update.getMessage().getText() != null) {
-                User user = this.userRepository.findByChatId(update.getMessage().getChatId()).get();
-                returnMassage.setChatId(update.getMessage().getChatId());
-                user.setOperationCost(update.getMessage().getText());
-                userRepository.save(user);
-                returnMassage.setChatId(update.getMessage().getChatId());
-                try {
-                    step4Ru(update);
-                } catch (TelegramApiException e) {
-                    throw new RuntimeException(e);
-                }
-            } else if (STATUSRU != null && STATUSRU.equals("location") && update.getMessage().getText() != ("▶\uFE0F Дальше") && update.getMessage().getText() != null) {
-                User user = this.userRepository.findByChatId(update.getMessage().getChatId()).get();
-                returnMassage.setChatId(update.getMessage().getChatId());
-                user.setRegistration(update.getMessage().getText());
-                userRepository.save(user);
-                returnMassage.setChatId(update.getMessage().getChatId());
-                try {
-                    step4Ru(update);
-                } catch (TelegramApiException e) {
-                    throw new RuntimeException(e);
-                }
-            } else if (STATUSRU != null && STATUSRU.equals("phoneNumber") && update.getMessage().getText() != ("▶\uFE0F Дальше") && update.getMessage().getText() != null) {
-                long chatId = update.getMessage().getChatId();
-                User user = this.userRepository.findByChatId(chatId).get();
-                returnMassage.setChatId(update.getMessage().getChatId());
-                user.setPhoneNumber(update.getMessage().getText());
-                userRepository.save(user);
-                returnMassage.setChatId(update.getMessage().getChatId());
-                try {
-                    step4Ru(update);
-                } catch (TelegramApiException e) {
-                    throw new RuntimeException(e);
-                }
-            }
 
 
-            if (update.getMessage().getText().equals("▶\uFE0F Keyingisi.")) {
-                returnMassage = step5Uz(userId);
-            }
-            if (update.getMessage().getText().equals("◀️ Ortga qaytish..")) {
-                try {
-                    step4Uz(update);
-                } catch (TelegramApiException e) {
-                    throw new RuntimeException(e);
+                if (update.getMessage().getText().equals("◀️ Ortga qaytish.")) {
+                    returnMassage = uz(update.getMessage());
                 }
-            }
-            if (update.getMessage().getText().equals("◀️ Ortga qaytish.")) {
-                returnMassage = uz(update.getMessage());
-            }
 
+            }
         }
+
 
         try {
             execute(returnMassage);
@@ -560,6 +929,7 @@ public class TelegramBotController extends TelegramLongPollingBot {
             throw new RuntimeException(e);
         }
     }
+
 
     public SendMessage buttonStart(Message message) {
         SendMessage sendMessage = new SendMessage();
@@ -607,10 +977,18 @@ public class TelegramBotController extends TelegramLongPollingBot {
         long chatId = update.getMessage().getChatId();
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(chatId);
-        // sendMessage.setText("vfbfb");
+        //  sendMessage.setText("->");
         User user = userRepository.findByChatId(chatId).get();
         if (update.hasCallbackQuery()) {
             update.getCallbackQuery().getMessage().getText();
+        } else if (user.getFirstname() == null) {
+            STATUSRU = "firstname";
+            sendMessage.setChatId(chatId);
+            sendMessage.setText("Введите имя");
+        } else if (user.getLastname() == null) {
+            STATUSRU = "lastname";
+            sendMessage.setChatId(chatId);
+            sendMessage.setText("Введите фамилию");
         } else if (user.getRegistration() == null) {
             sendMessage.setChatId(chatId);
             STATUSRU = "location";
@@ -631,17 +1009,21 @@ public class TelegramBotController extends TelegramLongPollingBot {
             STATUSRU = "nemeClinick";
             sendMessage.setChatId(chatId);
             sendMessage.setText("Название клиники");
-        } else if (user.getPassportPhoto() == null) {
-            STATUSRU = "passportPhoto";
+        } else if (user.getPassportPhoto1() == null) {
+            STATUSRU = "passportPhoto1";
             sendMessage.setChatId(chatId);
-            sendMessage.setText("Фото паспорта или ID (передняя и задняя сторона)");
+            sendMessage.setText("Фото паспорта или ID (передняя сторона)");
+        } else if (user.getPassportPhoto2() == null) {
+            STATUSRU = "passportPhoto2";
+            sendMessage.setChatId(chatId);
+            sendMessage.setText("Фото паспорта или ID (задняя сторона)");
         } else if (user.getCardPhoto() == null) {
             STATUSRU = "cardPhoto";
             sendMessage.setChatId(chatId);
             sendMessage.setText("Фото пластиковой карты заявителя");
-        } else if (user.getCardPhoto() != null && user.getPassportPhoto() != null && user.getRegistration() != null
+        } else if (user.getCardPhoto() != null && user.getPassportPhoto1() != null && user.getRegistration() != null
                 && user.getPhoneNumber() != null && user.getFullTitle() != null && user.getOperationCost() != null
-                && user.getClinicName() != null && user.getPercentage() == null) {
+                && user.getClinicName() != null && user.getPercentage() == null && user.getFirstname() != null && user.getLastname() != null) {
             STATUSRU = null;
             sendMessage.setChatId(chatId);
             sendMessage.setText("Ваша информация отправлена администратору. Ожидайте ответа от администратора.");
@@ -709,11 +1091,19 @@ public class TelegramBotController extends TelegramLongPollingBot {
         long chatId = update.getMessage().getChatId();
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(chatId);
-        // sendMessage.setText("vfbfb");
+        //      sendMessage.setText("->");
         User user = userRepository.findByChatId(chatId).get();
         if (update.hasCallbackQuery()) {
             sendMessage.setChatId(chatId);
             update.getCallbackQuery().getMessage().getText();
+        } else if (user.getFirstname() == null) {
+            STATUSUZ = "firstname";
+            sendMessage.setChatId(chatId);
+            sendMessage.setText("Ismingizni kiriting");
+        } else if (user.getLastname() == null) {
+            STATUSUZ = "lastname";
+            sendMessage.setChatId(chatId);
+            sendMessage.setText("Familiyangizni kiriting");
         } else if (user.getRegistration() == null) {
             STATUSUZ = "location";
             sendMessage.setChatId(chatId);
@@ -734,17 +1124,21 @@ public class TelegramBotController extends TelegramLongPollingBot {
             STATUSUZ = "nemeClinick";
             sendMessage.setChatId(chatId);
             sendMessage.setText("Klinikaning nomi");
-        } else if (user.getPassportPhoto() == null) {
-            STATUSUZ = "passportPhoto";
+        } else if (user.getPassportPhoto1() == null) {
+            STATUSUZ = "passportPhoto1";
             sendMessage.setChatId(chatId);
-            sendMessage.setText("Pasport yoki shaxsni tasdiqlovchi fotosurat (old va orqa)");
+            sendMessage.setText("Pasport yoki shaxsni tasdiqlovchi fotosurat (old)");
+        } else if (user.getPassportPhoto2() == null) {
+            STATUSUZ = "passportPhoto2";
+            sendMessage.setChatId(chatId);
+            sendMessage.setText("Pasport yoki shaxsni tasdiqlovchi fotosurat (orqa)");
         } else if (user.getCardPhoto() == null) {
             STATUSUZ = "cardPhoto";
             sendMessage.setChatId(chatId);
             sendMessage.setText("Ariza beruvchining plastik kartasi fotosurati");
-        } else if (user.getCardPhoto() != null && user.getPassportPhoto() != null && user.getRegistration() != null
+        } else if (user.getCardPhoto() != null && user.getPassportPhoto1() != null && user.getRegistration() != null
                 && user.getPhoneNumber() != null && user.getFullTitle() != null && user.getOperationCost() != null
-                && user.getClinicName() != null && user.getPercentage() == null) {
+                && user.getClinicName() != null && user.getFirstname() != null && user.getLastname() != null && user.getPercentage() == null) {
             STATUSUZ = null;
             sendMessage.setChatId(chatId);
             sendMessage.setText("Malumotlaringiz adminga yuborildi admindan javon kuting");
@@ -759,8 +1153,8 @@ public class TelegramBotController extends TelegramLongPollingBot {
         userRepository.save(user);
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(chatId);
-        sendMessage.setText("Tarifni tanglang");
-        sendPhotoToTelegram(chatId, "", "src/main/resources/image/terifUz.jpg");
+        sendMessage.setText("Выберите тариф");
+        sendPhotoToTelegram(chatId, "", "src/main/resources/image/tarifRu.jpeg");
         InlineKeyboardMarkup keyboardMarkup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
         keyboard.add(createInlineKeyboardRow("3 мес -20%", "tariff_3_months"));
@@ -778,19 +1172,16 @@ public class TelegramBotController extends TelegramLongPollingBot {
         sendPhoto.setChatId(String.valueOf(chatId));
         sendPhoto.setCaption(photoCaption);
 
-        // Load the photo from the file path and set it in the sendPhoto request
         File photoFile = new File(photoFilePath);
         try {
             if (photoFile.exists()) {
                 InputFile photoInputFile = new InputFile(photoFile);
                 sendPhoto.setPhoto(photoInputFile);
-                execute(sendPhoto); // Send the photo
+                execute(sendPhoto);
             } else {
-                // Handle the case where the photo file does not exist
                 System.err.println("Photo file does not exist: " + photoFilePath);
             }
         } catch (TelegramApiException e) {
-            // Handle any exceptions that may occur while sending the photo
             e.printStackTrace();
         }
     }
@@ -838,24 +1229,17 @@ public class TelegramBotController extends TelegramLongPollingBot {
         InlineKeyboardMarkup markupInLine = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rowsInLine = new ArrayList<>();
         List<InlineKeyboardButton> rowInLine = new ArrayList<>();
+        List<InlineKeyboardButton> rowInLine1 = new ArrayList<>();
         var payment = new InlineKeyboardButton();
-        payment.setText("Перефоткать паспорт");
-        String YES_BUTTON = "Yes";
+        payment.setText("Переотправить переднюю часть паспорта");
         payment.setCallbackData(PASSPORT_BUTTON);
         var back = new InlineKeyboardButton();
-        back.setText("Перефоткать пластиковую карту");
+        back.setText("Потвердить паспорт");
         back.setCallbackData(NO_BUTTON);
-        var phoneNum = new InlineKeyboardButton();
-        phoneNum.setText("Введите номер телефона");
-        phoneNum.setCallbackData(PHONE_BUTTON);
-        var acceptBut = new InlineKeyboardButton();
-        acceptBut.setText("Документы принять");
-        acceptBut.setCallbackData(ACCEPT_BUTTON);
         rowInLine.add(payment);
-        rowInLine.add(back);
-        rowInLine.add(phoneNum);
-        rowInLine.add(acceptBut);
+        rowInLine1.add(back);
         rowsInLine.add(rowInLine);
+        rowsInLine.add(rowInLine1);
         markupInLine.setKeyboard(rowsInLine);
         sendMessage.setReplyMarkup(markupInLine);
         execute(sendMessage);
@@ -923,7 +1307,6 @@ public class TelegramBotController extends TelegramLongPollingBot {
         execute(forwardMessage);
     }
 
-    @SneakyThrows
 
     @Override
     public String getBotUsername() {
@@ -936,7 +1319,174 @@ public class TelegramBotController extends TelegramLongPollingBot {
     }
 
 
+    private void loactionYes(long chatId, String text) throws TelegramApiException {
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(chatId);
+        sendMessage.setText(text);
+        InlineKeyboardMarkup markupInLine = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rowsInLine = new ArrayList<>();
+        List<InlineKeyboardButton> rowInLine = new ArrayList<>();
+        List<InlineKeyboardButton> rowInLine1 = new ArrayList<>();
+        var payment = new InlineKeyboardButton();
+        payment.setText("Переотправьте прописку");
+        payment.setCallbackData(LOCATION);
+        var back = new InlineKeyboardButton();
+        back.setText("Принять прописку");
+        back.setCallbackData(LOCATION_ACCEPT);
+        rowInLine.add(payment);
+        rowInLine1.add(back);
+        rowsInLine.add(rowInLine);
+        rowsInLine.add(rowInLine1);
+        markupInLine.setKeyboard(rowsInLine);
+        sendMessage.setReplyMarkup(markupInLine);
+        execute(sendMessage);
+    }
 
+    private void phoneYes(long chatId, String text) throws TelegramApiException {
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(chatId);
+        sendMessage.setText(text);
+        InlineKeyboardMarkup markupInLine = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rowsInLine = new ArrayList<>();
+        List<InlineKeyboardButton> rowInLine = new ArrayList<>();
+        List<InlineKeyboardButton> rowInLine1 = new ArrayList<>();
+        var payment = new InlineKeyboardButton();
+        payment.setText("Переотправьте номер привязанный к карте");
+        payment.setCallbackData(PHONE_BUTTON);
+        var back = new InlineKeyboardButton();
+        back.setText("Принять номер");
+        back.setCallbackData(PHONE_BUTTON_ACCEPT);
+        rowInLine.add(payment);
+        rowInLine1.add(back);
+        rowsInLine.add(rowInLine);
+        rowsInLine.add(rowInLine1);
+        markupInLine.setKeyboard(rowsInLine);
+        sendMessage.setReplyMarkup(markupInLine);
+        execute(sendMessage);
+    }
+
+
+    private void moneyYes(long chatId, String text) throws TelegramApiException {
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(chatId);
+        sendMessage.setText(text);
+        InlineKeyboardMarkup markupInLine = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rowsInLine = new ArrayList<>();
+        List<InlineKeyboardButton> rowInLine = new ArrayList<>();
+        List<InlineKeyboardButton> rowInLine1 = new ArrayList<>();
+        var payment = new InlineKeyboardButton();
+        payment.setText("Переотправьте сумму операции");
+        payment.setCallbackData(PAYMENT);
+        var back = new InlineKeyboardButton();
+        back.setText("Принять сумму операции");
+        back.setCallbackData(PAYMENT_ACCEPT);
+        rowInLine.add(payment);
+        rowInLine1.add(back);
+        rowsInLine.add(rowInLine);
+        rowsInLine.add(rowInLine1);
+        markupInLine.setKeyboard(rowsInLine);
+        sendMessage.setReplyMarkup(markupInLine);
+        execute(sendMessage);
+    }
+
+    private void clinicYes(long chatId, String text) throws TelegramApiException {
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(chatId);
+        sendMessage.setText(text);
+        InlineKeyboardMarkup markupInLine = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rowsInLine = new ArrayList<>();
+        List<InlineKeyboardButton> rowInLine = new ArrayList<>();
+        List<InlineKeyboardButton> rowInLine1 = new ArrayList<>();
+        var payment = new InlineKeyboardButton();
+        payment.setText("Переотправьте название клиники");
+        payment.setCallbackData(CLINIC);
+        var back = new InlineKeyboardButton();
+        back.setText("Принять название клиники");
+        back.setCallbackData(CLINIC_ACCEPT);
+        rowInLine.add(payment);
+        rowInLine1.add(back);
+        rowsInLine.add(rowInLine);
+        rowsInLine.add(rowInLine1);
+        markupInLine.setKeyboard(rowsInLine);
+        sendMessage.setReplyMarkup(markupInLine);
+        execute(sendMessage);
+    }
+
+    private void operationYes(long chatId, String text) throws TelegramApiException {
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(chatId);
+        sendMessage.setText(text);
+        InlineKeyboardMarkup markupInLine = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rowsInLine = new ArrayList<>();
+        List<InlineKeyboardButton> rowInLine = new ArrayList<>();
+        List<InlineKeyboardButton> rowInLine1 = new ArrayList<>();
+        var payment = new InlineKeyboardButton();
+        payment.setText("Переотправьте название операции");
+        payment.setCallbackData(OPERATION);
+        var back = new InlineKeyboardButton();
+        back.setText("Принять название операции");
+        back.setCallbackData(OPERATION_ACCEPT);
+        rowInLine.add(payment);
+        rowInLine1.add(back);
+        rowsInLine.add(rowInLine);
+        rowsInLine.add(rowInLine1);
+        markupInLine.setKeyboard(rowsInLine);
+        sendMessage.setReplyMarkup(markupInLine);
+        execute(sendMessage);
+    }
+
+
+    private void pasportBack(long chatId, String text) throws TelegramApiException {
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(chatId);
+        sendMessage.setText(text);
+        InlineKeyboardMarkup markupInLine = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rowsInLine = new ArrayList<>();
+        List<InlineKeyboardButton> rowInLine = new ArrayList<>();
+        List<InlineKeyboardButton> rowInLine1 = new ArrayList<>();
+        var payment = new InlineKeyboardButton();
+        payment.setText("Переотправьте заднюю сторону пасспорта");
+        payment.setCallbackData(PASSPORT_BUTTON_BACK);
+        var back = new InlineKeyboardButton();
+        back.setText("Принять заднюю сторону пасспорта");
+        back.setCallbackData(NO_BUTTON_BACK);
+        rowInLine.add(payment);
+        rowInLine1.add(back);
+        rowsInLine.add(rowInLine);
+        rowsInLine.add(rowInLine1);
+        markupInLine.setKeyboard(rowsInLine);
+        sendMessage.setReplyMarkup(markupInLine);
+        execute(sendMessage);
+    }
+
+    private void cardYes(long chatId, String text) throws TelegramApiException {
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(chatId);
+        sendMessage.setText(text);
+        InlineKeyboardMarkup markupInLine = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rowsInLine = new ArrayList<>();
+        List<InlineKeyboardButton> rowInLine2 = new ArrayList<>();
+        List<InlineKeyboardButton> rowInLine1 = new ArrayList<>();
+        List<InlineKeyboardButton> rowInLine3 = new ArrayList<>();
+        var payment = new InlineKeyboardButton();
+        payment.setText("Переотправьте фото пластиковой карты");
+        payment.setCallbackData(CARD);
+        var back = new InlineKeyboardButton();
+        back.setText("Принять пластиковую карту");
+        back.setCallbackData(CARDA);
+        var accept = new InlineKeyboardButton();
+        accept.setText("✅ Принять все документы");
+        accept.setCallbackData(ACCEPT_BUTTON);
+        rowInLine2.add(payment);
+        rowInLine1.add(back);
+        rowInLine3.add(accept);
+        rowsInLine.add(rowInLine2);
+        rowsInLine.add(rowInLine1);
+        rowsInLine.add(rowInLine3);
+        markupInLine.setKeyboard(rowsInLine);
+        sendMessage.setReplyMarkup(markupInLine);
+        execute(sendMessage);
+    }
 
 
 }
