@@ -8,10 +8,10 @@ services:
     ports:
       - "9090:2004"
     depends_on:
-      - postgres_db
+      - postgresql
     links:
-      - postgres_db:postgres_db
-  postgres_db:
+      - postgresql:postgresql
+  postgresql:
     container_name: postgres
     image: "postgres:15"
     restart: always
