@@ -463,6 +463,8 @@ public class TelegramBotController extends TelegramLongPollingBot {
                                 sendMessage.setText("Ваш договор готов. Пожалуйста распечатайте полученный файл, подпишите и направьте нам отсканированную версию. ");
                                 execute(sendMessage);
                             }
+
+
                             if (LANGUAGE.equals("uz")) {
                                 SendMessage sendMessage = new SendMessage();
                                 sendMessage.setChatId(caption);
