@@ -1,17 +1,17 @@
-version: "3.7"
+version: "3.1"
 services:
   app-service:
-    container_name: telebot_bot
+    container_name: tel_bot
     build:
       dockerfile: /home/sardor/Backend/Project/Bots/TeleBot/TeleBot/DockerFile
     restart: always
     ports:
       - "9090:2004"
     depends_on:
-      - postgres
+      - postgres_db
     links:
-      - postgres:postgres
-  postgres:
+      - postgres_db:postgresql
+  postgres_db:
     container_name: postgres
     image: "postgres:15"
     restart: always
