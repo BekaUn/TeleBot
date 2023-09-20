@@ -10,13 +10,13 @@ services:
     depends_on:
       - postgres_db
     links:
-      - postgres_db:postgresql
+      - postgres_db:postgres_db
   postgres_db:
     container_name: postgres
     image: "postgres:15"
     restart: always
     ports:
-      - "5433:5432"
+      - "5434:5433"
     environment:
       POSTGRES_DB: bot_db
       POSTGRES_USER: bot
