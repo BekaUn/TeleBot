@@ -21,25 +21,25 @@ import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 @Slf4j
 @Component
 public class BotConfig {
-    /*  @Autowired
-      TelegramBotController bot;*/
-    @Autowired
-    UserRepository userRepository;
-@Autowired
+      @Autowired
+      TelegramBotController bot;
+    /*@Autowired
+    UserRepository userRepository;*/
+/*@Autowired
 Uz uz;
 @Autowired
 Ru ru;
 @Autowired
 Admin admin;
 @Autowired
-Button button;
+Button button;*/
     @EventListener({ContextRefreshedEvent.class})
     public void init() throws TelegramApiException {
         TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
-        TelegramBotController botController = new TelegramBotController(ru, uz, admin, button, userRepository);
+     //   TelegramBotController botController = new TelegramBotController(ru, uz, admin, button, userRepository);
         try {
-           // telegramBotsApi.registerBot(new WebhookBot(),new SetWebhook());
-            telegramBotsApi.registerBot(botController);
+            //telegramBotsApi.registerBot(new WebhookBot(),new SetWebhook());
+            telegramBotsApi.registerBot(bot);
         } catch (TelegramApiException e) {
             log.error("Error occurred: " + e.getMessage());
         }

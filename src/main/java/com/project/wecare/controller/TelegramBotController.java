@@ -71,7 +71,7 @@ public class TelegramBotController extends TelegramLongPollingBot {
         if (update.hasCallbackQuery()) {
             if (update.getCallbackQuery().getData().equals("Passport")) {
                 SendMessage sendMessage = new SendMessage();
-                sendMessage.setChatId(userId);
+                sendMessage.setChatId(this.userId);
                 sendMessage.setText("Качество фотографии передней стороны паспорта не соответствует требованиям, отправьте фотографию в хорошем качестве.");
                 User user = userRepository.findByChatId(userId).get();
                 user.setPassportPhoto1(null);
@@ -85,7 +85,7 @@ public class TelegramBotController extends TelegramLongPollingBot {
             }
             if (update.getCallbackQuery().getData().equals("NO")) {
                 SendMessage sendMessage = new SendMessage();
-                sendMessage.setChatId(userId);
+                sendMessage.setChatId(this.userId);
                 sendMessage.setText("Фото передней части паспорта принято");
                 try {
                     execute(sendMessage);
@@ -95,9 +95,9 @@ public class TelegramBotController extends TelegramLongPollingBot {
             }
             if (update.getCallbackQuery().getData().equals("Phone")) {
                 SendMessage sendMessage = new SendMessage();
-                sendMessage.setChatId(userId);
+                sendMessage.setChatId(this.userId);
                 sendMessage.setText("Отправьте заново номер телефона");
-                User user = userRepository.findByChatId(userId).get();
+                User user = userRepository.findByChatId(this.userId).get();
                 user.setPhoneNumber(null);
                 STATUSRU = "phoneNumber";
                 userRepository.save(user);
@@ -110,9 +110,9 @@ public class TelegramBotController extends TelegramLongPollingBot {
             if (update.getCallbackQuery().getData().equals("Accept")) {
                 try {
                     if (LANGUAGE.equals("uz")) {
-                        execute(step5Uz(userId));
+                        execute(step5Uz(this.userId));
                     } else if (LANGUAGE.equals("ru")) {
-                        execute(step5Ru(userId));
+                        execute(step5Ru(this.userId));
                     }
                 } catch (TelegramApiException e) {
                     throw new RuntimeException(e);
@@ -120,9 +120,9 @@ public class TelegramBotController extends TelegramLongPollingBot {
             }
             if (update.getCallbackQuery().getData().equals("loc")) {
                 SendMessage sendMessage = new SendMessage();
-                sendMessage.setChatId(userId);
+                sendMessage.setChatId(this.userId);
                 sendMessage.setText("Отправьте заново прописку");
-                User user = userRepository.findByChatId(userId).get();
+                User user = userRepository.findByChatId(this.userId).get();
                 user.setRegistration(null);
                 STATUSRU = "location";
                 userRepository.save(user);
@@ -134,7 +134,7 @@ public class TelegramBotController extends TelegramLongPollingBot {
             }
             if (update.getCallbackQuery().getData().equals("loc ACC")) {
                 SendMessage sendMessage = new SendMessage();
-                sendMessage.setChatId(userId);
+                sendMessage.setChatId(this.userId);
                 sendMessage.setText("Пропсика принета");
                 try {
                     execute(sendMessage);
@@ -145,9 +145,9 @@ public class TelegramBotController extends TelegramLongPollingBot {
 
             if (update.getCallbackQuery().getData().equals("pay")) {
                 SendMessage sendMessage = new SendMessage();
-                sendMessage.setChatId(userId);
+                sendMessage.setChatId(this.userId);
                 sendMessage.setText("Отправьте заново стоимость операции");
-                User user = userRepository.findByChatId(userId).get();
+                User user = userRepository.findByChatId(this.userId).get();
                 user.setOperationCost(null);
                 STATUSRU = "money";
                 userRepository.save(user);
@@ -159,7 +159,7 @@ public class TelegramBotController extends TelegramLongPollingBot {
             }
             if (update.getCallbackQuery().getData().equals("pay ACC")) {
                 SendMessage sendMessage = new SendMessage();
-                sendMessage.setChatId(userId);
+                sendMessage.setChatId(this.userId);
                 sendMessage.setText("Стоимость операции была принета");
                 try {
                     execute(sendMessage);
@@ -169,7 +169,7 @@ public class TelegramBotController extends TelegramLongPollingBot {
             }
             if (update.getCallbackQuery().getData().equals("reject")) {
                 SendMessage sendMessage = new SendMessage();
-                sendMessage.setChatId(userId);
+                sendMessage.setChatId(this.userId);
                 sendMessage.setText("Вам отказано в кредите");
                 try {
                     execute(sendMessage);
@@ -179,9 +179,9 @@ public class TelegramBotController extends TelegramLongPollingBot {
             }
             if (update.getCallbackQuery().getData().equals("clinic")) {
                 SendMessage sendMessage = new SendMessage();
-                sendMessage.setChatId(userId);
+                sendMessage.setChatId(this.userId);
                 sendMessage.setText("Отправьте заново название клиники");
-                User user = userRepository.findByChatId(userId).get();
+                User user = userRepository.findByChatId(this.userId).get();
                 user.setClinicName(null);
                 STATUSRU = "nemeClinick";
                 userRepository.save(user);
@@ -193,7 +193,7 @@ public class TelegramBotController extends TelegramLongPollingBot {
             }
             if (update.getCallbackQuery().getData().equals("clinic ACC")) {
                 SendMessage sendMessage = new SendMessage();
-                sendMessage.setChatId(userId);
+                sendMessage.setChatId(this.userId);
                 sendMessage.setText("Название клиники успешно приянто");
                 try {
                     execute(sendMessage);
@@ -205,7 +205,7 @@ public class TelegramBotController extends TelegramLongPollingBot {
                 SendMessage sendMessage = new SendMessage();
                 sendMessage.setChatId(userId);
                 sendMessage.setText("Отправьте заново название операции");
-                User user = userRepository.findByChatId(userId).get();
+                User user = userRepository.findByChatId(this.userId).get();
                 user.setFullTitle(null);
                 STATUSRU = "fulTitle";
                 userRepository.save(user);
@@ -217,7 +217,7 @@ public class TelegramBotController extends TelegramLongPollingBot {
             }
             if (update.getCallbackQuery().getData().equals("operation ACC")) {
                 SendMessage sendMessage = new SendMessage();
-                sendMessage.setChatId(userId);
+                sendMessage.setChatId(this.userId);
                 sendMessage.setText("Название операции успешно принято");
                 try {
                     execute(sendMessage);
@@ -227,9 +227,9 @@ public class TelegramBotController extends TelegramLongPollingBot {
             }
             if (update.getCallbackQuery().getData().equals("Passport_back")) {
                 SendMessage sendMessage = new SendMessage();
-                sendMessage.setChatId(userId);
+                sendMessage.setChatId(this.userId);
                 sendMessage.setText("Качество фотографии задней стороны паспорта не соответствует требованиям, отправьте фотографию в хорошем качестве.");
-                User user = userRepository.findByChatId(userId).get();
+                User user = userRepository.findByChatId(this.userId).get();
                 user.setPassportPhoto2(null);
                 STATUSRU = "passportPhoto2";
                 userRepository.save(user);
@@ -241,7 +241,7 @@ public class TelegramBotController extends TelegramLongPollingBot {
             }
             if (update.getCallbackQuery().getData().equals("NO_BACK")) {
                 SendMessage sendMessage = new SendMessage();
-                sendMessage.setChatId(userId);
+                sendMessage.setChatId(this.userId);
                 sendMessage.setText("Задняя сторона паспорта принята");
                 try {
                     execute(sendMessage);
@@ -251,9 +251,9 @@ public class TelegramBotController extends TelegramLongPollingBot {
             }
             if (update.getCallbackQuery().getData().equals("card")) {
                 SendMessage sendMessage = new SendMessage();
-                sendMessage.setChatId(userId);
+                sendMessage.setChatId(this.userId);
                 sendMessage.setText("Качество фотографии пластиковой карты не соответствует требованиям, отправьте фотографию в хорошем качестве.");
-                User user = userRepository.findByChatId(userId).get();
+                User user = userRepository.findByChatId(this.userId).get();
                 user.setCardPhoto(null);
                 STATUSRU = "cardPhoto";
                 userRepository.save(user);
@@ -265,7 +265,7 @@ public class TelegramBotController extends TelegramLongPollingBot {
             }
             if (update.getCallbackQuery().getData().equals("card ACC")) {
                 SendMessage sendMessage = new SendMessage();
-                sendMessage.setChatId(userId);
+                sendMessage.setChatId(this.userId);
                 sendMessage.setText("Фаото пластиковой карты принято");
                 try {
                     execute(sendMessage);
@@ -276,7 +276,7 @@ public class TelegramBotController extends TelegramLongPollingBot {
             if (update.getCallbackQuery().getData().equals("tariff_3_months")) {
                 SendMessage sendMessage = new SendMessage();
                 sendMessage.setChatId(groupChatId);
-                User user = userRepository.findByChatId(userId).get();
+                User user = userRepository.findByChatId(this.userId).get();
                 user.setPercentage("3 oy -20%");
                 userRepository.save(user);
                 sendMessage.setText("3 oy -20%" + "\n\n" + user.getFirstname() + " " + user.getLastname());
@@ -289,7 +289,7 @@ public class TelegramBotController extends TelegramLongPollingBot {
             if (update.getCallbackQuery().getData().equals("tariff_6_months")) {
                 SendMessage sendMessage = new SendMessage();
                 sendMessage.setChatId(groupChatId);
-                User user = userRepository.findByChatId(userId).get();
+                User user = userRepository.findByChatId(this.userId).get();
                 user.setPercentage("6 oy -25%");
                 userRepository.save(user);
                 sendMessage.setText("6 oy -25%" + "\n\n" + user.getFirstname() + " " + user.getLastname());
@@ -302,7 +302,7 @@ public class TelegramBotController extends TelegramLongPollingBot {
             if (update.getCallbackQuery().getData().equals("tariff_9_months")) {
                 SendMessage sendMessage = new SendMessage();
                 sendMessage.setChatId(groupChatId);
-                User user = userRepository.findByChatId(userId).get();
+                User user = userRepository.findByChatId(this.userId).get();
                 user.setPercentage("9 oy -32%");
                 userRepository.save(user);
                 sendMessage.setText("9 oy -32%" + "\n\n" + user.getFirstname() + " " + user.getLastname());
@@ -315,7 +315,7 @@ public class TelegramBotController extends TelegramLongPollingBot {
             if (update.getCallbackQuery().getData().equals("tariff_12_months")) {
                 SendMessage sendMessage = new SendMessage();
                 sendMessage.setChatId(groupChatId);
-                User user = userRepository.findByChatId(userId).get();
+                User user = userRepository.findByChatId(this.userId).get();
                 user.setPercentage("12 oy -38%");
                 userRepository.save(user);
                 sendMessage.setText("12 oy -38%" + "\n\n" + user.getFirstname() + " " + user.getLastname());
@@ -332,7 +332,7 @@ public class TelegramBotController extends TelegramLongPollingBot {
                 PhotoSize photoSize = photoSizes.get(photoSizes.size() - 1);
                 GetFile getFile = new GetFile(photoSize.getFileId());
                 try {
-                    userId = update.getMessage().getChatId();
+                    this.userId = update.getMessage().getChatId();
                     User user = userRepository.findByChatId(update.getMessage().getChatId()).get();
                     org.telegram.telegrambots.meta.api.objects.File file = execute(getFile);
                     String fileURL = file.getFileUrl(getBotToken());
@@ -387,7 +387,6 @@ public class TelegramBotController extends TelegramLongPollingBot {
                             step4Uz(update);
                             forwardPhotoToAdmin(update.getMessage());
                             button.cardYes(groupChatId, "\n\n" + user.getFirstname() + " " + user.getLastname() + "\n " + user.getChatId());
-
                         }
                     }
                     if (STATUSRU != null) {
@@ -453,7 +452,7 @@ public class TelegramBotController extends TelegramLongPollingBot {
                 }
             }
             if (update.getMessage().hasPhoto()) {
-                userId = update.getMessage().getChatId();
+                this.userId = update.getMessage().getChatId();
                 try {
                     forwardPhotoToAdmin(update.getMessage());
                     admin.yesNoAdmin(groupChatId, "prover");
@@ -516,7 +515,7 @@ public class TelegramBotController extends TelegramLongPollingBot {
                 }
                 if (STATUSRU != null) {
                     if (STATUSRU.equals("location")) {
-                        userId = update.getMessage().getChatId();
+                        this.userId = update.getMessage().getChatId();
                         User userFind = userRepository.findByChatId(update.getMessage().getChatId()).get();
 
                         String message = update.getMessage().getText() + "\n " + userFind.getFirstname() + " " + userFind.getLastname() + "\n " + userFind.getChatId();
@@ -525,7 +524,7 @@ public class TelegramBotController extends TelegramLongPollingBot {
                 }
                 if (STATUSRU != null) {
                     if (STATUSRU.equals("phoneNumber")) {
-                        userId = update.getMessage().getChatId();
+                        this.userId = update.getMessage().getChatId();
                         User userFind = userRepository.findByChatId(update.getMessage().getChatId()).get();
                         String message = update.getMessage().getText() + "\n " + userFind.getFirstname() + " " + userFind.getLastname() + "\n " + userFind.getChatId();
                         button.phoneYes(groupChatId, message);
@@ -533,7 +532,7 @@ public class TelegramBotController extends TelegramLongPollingBot {
                 }
                 if (STATUSRU != null) {
                     if (STATUSRU.equals("money")) {
-                        userId = update.getMessage().getChatId();
+                        this.userId = update.getMessage().getChatId();
                         User userFind = userRepository.findByChatId(update.getMessage().getChatId()).get();
                         String message = update.getMessage().getText() + "\n " + userFind.getFirstname() + " " + userFind.getLastname() + "\n " + userFind.getChatId();
                         button.moneyYes(groupChatId, message);
@@ -541,7 +540,7 @@ public class TelegramBotController extends TelegramLongPollingBot {
                 }
                 if (STATUSRU != null) {
                     if (STATUSRU.equals("nemeClinick")) {
-                        userId = update.getMessage().getChatId();
+                        this.userId = update.getMessage().getChatId();
                         User userFind = userRepository.findByChatId(update.getMessage().getChatId()).get();
                         String message = update.getMessage().getText() + "\n " + userFind.getFirstname() + " " + userFind.getLastname() + "\n " + userFind.getChatId();
                         button.clinicYes(groupChatId, message);
@@ -549,7 +548,7 @@ public class TelegramBotController extends TelegramLongPollingBot {
                 }
                 if (STATUSRU != null) {
                     if (STATUSRU.equals("fulTitle")) {
-                        userId = update.getMessage().getChatId();
+                        this.userId = update.getMessage().getChatId();
                         User userFind = userRepository.findByChatId(update.getMessage().getChatId()).get();
                         String message = update.getMessage().getText() + "\n " + userFind.getFirstname() + " " + userFind.getLastname() + "\n " + userFind.getChatId();
                         button.operationYes(groupChatId, message);
@@ -646,7 +645,7 @@ public class TelegramBotController extends TelegramLongPollingBot {
                         && !update.getMessage().getText().equals("◀️ Назад") && !update.getMessage().getText().equals("\uD83C\uDDF7\uD83C\uDDFA Ru") && !update.getMessage().getText().equals("/start")) {
                     User user = this.userRepository.findByChatId(update.getMessage().getChatId()).get();
                     user.setClinicName(update.getMessage().getText());
-                    userRepository.save(user);
+                    this.userRepository.save(user);
                     if (update.getMessage().getText() != null && user.getFullTitle() != null) {
                         try {
                             step4Uz(update);
