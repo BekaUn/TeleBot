@@ -1,0 +1,12 @@
+/home/sardor/Backend/Project/Bots/TeleBot/TeleBot/src/main/java/com/project/wecare/entity/User.java
+/home/sardor/Backend/Project/Bots/TeleBot/TeleBot/src/main/java/com/project/wecare/service/Admin.java
+/home/sardor/Backend/Project/Bots/TeleBot/TeleBot/src/main/java/com/project/wecare/configuration/ResponseDto.java
+/home/sardor/Backend/Project/Bots/TeleBot/TeleBot/src/main/java/com/project/wecare/configuration/ErrorDto.java
+/home/sardor/Backend/Project/Bots/TeleBot/TeleBot/src/main/java/com/project/wecare/configuration/BotConfig.java
+/home/sardor/Backend/Project/Bots/TeleBot/TeleBot/src/main/java/com/project/wecare/service/Ru.java
+/home/sardor/Backend/Project/Bots/TeleBot/TeleBot/src/main/java/com/project/wecare/controller/TelegramBotController.java
+/home/sardor/Backend/Project/Bots/TeleBot/TeleBot/src/main/java/com/project/wecare/service/Uz.java
+/home/sardor/Backend/Project/Bots/TeleBot/TeleBot/src/main/java/com/project/wecare/service/Button.java
+/home/sardor/Backend/Project/Bots/TeleBot/TeleBot/src/main/java/com/project/wecare/WeCareApplication.java
+/home/sardor/Backend/Project/Bots/TeleBot/TeleBot/src/main/java/com/project/wecare/repository/UserRepository.java
+/home/sardor/Backend/Project/Bots/TeleBot/TeleBot/src/main/java/com/project/wecare/configuration/ExceptionHandlerResource.java
