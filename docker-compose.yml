@@ -18,7 +18,7 @@ services:
       dockerfile: DockerFile
     restart: always
     ports:
-      - "8080:8397"
+      - "1548:8397"
     depends_on:
       - db
     environment:
